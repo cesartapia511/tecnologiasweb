@@ -104,6 +104,17 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
         )}
 
+        {canAccess('estudiantes') && (
+          <NavLink
+            to="/estudiantes"
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            onClick={onClose}
+          >
+            <GraduationCap size={18} />
+            <span>Estudiantes Registrados</span>
+          </NavLink>
+        )}
+
         {canAccess('evaluaciones') && (
           <NavLink
             to="/evaluaciones"
@@ -144,7 +155,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         )}
 
         {/* Seguridad y Gestión del Sistema (Admin) */}
-        {(canAccess('usuarios') || canAccess('auditoria')) && (
+        {(canAccess('usuarios') || canAccess('roles') || canAccess('auditoria')) && (
           <>
             <div className="nav-section-title">Administración del Sistema</div>
             {canAccess('usuarios') && (
@@ -155,6 +166,17 @@ export const Sidebar = ({ isOpen, onClose }) => {
               >
                 <Users size={18} />
                 <span>Cuentas de Usuario</span>
+              </NavLink>
+            )}
+
+            {canAccess('roles') && (
+              <NavLink
+                to="/roles"
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                onClick={onClose}
+              >
+                <ShieldCheck size={18} />
+                <span>Roles del Sistema</span>
               </NavLink>
             )}
 

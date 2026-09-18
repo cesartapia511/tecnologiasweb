@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { materiasService, carrerasService } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -27,11 +27,7 @@ export const MateriasPage = () => {
     id_carrera: '',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [mData, cData] = await Promise.all([
@@ -45,7 +41,11 @@ export const MateriasPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleOpenCreate = () => {
     setEditingMateria(null);

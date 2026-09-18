@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { disponibilidadService } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -25,11 +25,7 @@ export const DisponibilidadPage = () => {
     hora_fin: '18:00',
   });
 
-  useEffect(() => {
-    loadHorarios();
-  }, [user]);
-
-  const loadHorarios = async () => {
+  const loadHorarios = useCallback(async () => {
     setLoading(true);
     try {
       const data = await disponibilidadService.getAll(user?.id_tutor);
@@ -39,7 +35,11 @@ export const DisponibilidadPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id_tutor, showError]);
+
+  useEffect(() => {
+    loadHorarios();
+  }, [loadHorarios]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

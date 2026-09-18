@@ -1,10 +1,12 @@
-import api from './api';
+import api, { fixMojibake } from './api';
 
 export const authService = {
   login: async (usuario, contrasena) => {
     const res = await api.post('/auth/login.php', { usuario, contrasena });
     if (res.success && res.data) {
-      localStorage.setItem('upds_user', JSON.stringify(res.data));
+      const cleaned = fixMojibake(res.data);
+      localStorage.setItem('upds_user', JSON.stringify(cleaned));
+      return cleaned;
     }
     return res.data;
   },
@@ -22,7 +24,7 @@ export const authService = {
     const data = localStorage.getItem('upds_user');
     if (!data) return null;
     try {
-      return JSON.parse(data);
+      return fixMojibake(JSON.parse(data));
     } catch {
       return null;
     }

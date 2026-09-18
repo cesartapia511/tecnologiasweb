@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { tutoresService, materiasService } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../../components/common/Modal';
-import { UserCheck, Star, BookOpen, Mail, Phone, Edit3, RefreshCw } from 'lucide-react';
+import { Star, BookOpen, Mail, Edit3, RefreshCw } from 'lucide-react';
 
 export const TutoresPage = () => {
   const [tutores, setTutores] = useState([]);
@@ -22,11 +22,7 @@ export const TutoresPage = () => {
   const { isAdmin, isDocente, user } = useAuth();
   const { showSuccess, showError } = useToast();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [tData, mData] = await Promise.all([
@@ -40,7 +36,11 @@ export const TutoresPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleOpenEdit = (tutor) => {
     setEditingTutor(tutor);

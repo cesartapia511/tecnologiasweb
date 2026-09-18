@@ -13,6 +13,8 @@ import { DisponibilidadPage } from '../pages/disponibilidad/DisponibilidadPage';
 import { TutoriasPage } from '../pages/tutorias/TutoriasPage';
 import { EvaluacionesPage } from '../pages/evaluaciones/EvaluacionesPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
+import { EstudiantesPage } from '../pages/estudiantes/EstudiantesPage';
+import { RolesPage } from '../pages/roles/RolesPage';
 
 export const AppRouter = () => {
   return (
@@ -45,8 +47,16 @@ export const AppRouter = () => {
             }
           />
 
-          {/* Docentes */}
+          {/* Docentes y Estudiantes */}
           <Route path="/tutores" element={<TutoresPage />} />
+          <Route
+            path="/estudiantes"
+            element={
+              <RoleGuard module="estudiantes">
+                <EstudiantesPage />
+              </RoleGuard>
+            }
+          />
 
           {/* Evaluaciones */}
           <Route
@@ -82,6 +92,14 @@ export const AppRouter = () => {
             element={
               <RoleGuard module="usuarios">
                 <UsuariosPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="/roles"
+            element={
+              <RoleGuard module="roles">
+                <RolesPage />
               </RoleGuard>
             }
           />

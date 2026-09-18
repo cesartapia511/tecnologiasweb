@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { carrerasService } from '../../services/dataServices';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../../components/common/Modal';
@@ -19,11 +19,7 @@ export const CarrerasPage = () => {
 
   const { showSuccess, showError } = useToast();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const data = await carrerasService.getAll();
@@ -33,7 +29,11 @@ export const CarrerasPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleOpenCreate = () => {
     setEditingCarrera(null);
