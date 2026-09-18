@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   tutoriasService,
   materiasService,
@@ -17,13 +17,9 @@ import {
   Star,
   Video,
   MapPin,
-  Clock,
-  User,
   BookOpen,
-  MessageSquare,
   RefreshCw,
   FileText,
-  Download,
   Printer,
 } from 'lucide-react';
 
@@ -70,11 +66,7 @@ export const TutoriasPage = () => {
 
   const { showSuccess, showError } = useToast();
 
-  useEffect(() => {
-    loadData();
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -107,7 +99,11 @@ export const TutoriasPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isDocente, isEstudiante, user?.id_tutor, user?.id_estudiante, showError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Crear Solicitud
   const handleSolicitar = async (e) => {
@@ -204,39 +200,6 @@ export const TutoriasPage = () => {
     setIsActaOpen(true);
   };
 
-  // Exportar reporte a CSV
-  const handleExportCSV = () => {
-    if (!tutorias || tutorias.length === 0) {
-      showError('No hay tutorías registradas para exportar');
-      return;
-    }
-    const headers = ['ID', 'Materia', 'Docente', 'Estudiante', 'R.U.', 'Fecha', 'Inicio', 'Fin', 'Modalidad', 'Estado', 'Calificacion', 'Observaciones'];
-    const rows = tutorias.map((t) => [
-      t.id_tutoria,
-      `"${t.nombre_materia}"`,
-      `"${t.tutor_nombre} ${t.tutor_apellido}"`,
-      `"${t.estudiante_nombre} ${t.estudiante_apellido}"`,
-      `"${t.registro_universitario || ''}"`,
-      t.fecha,
-      t.hora_inicio,
-      t.hora_fin,
-      t.modalidad,
-      t.estado,
-      t.calificacion || '',
-      `"${(t.observaciones || '').replace(/"/g, '""')}"`,
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `reporte_tutorias_upds_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showSuccess('Reporte CSV descargado correctamente');
-  };
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -254,10 +217,6 @@ export const TutoriasPage = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button onClick={handleExportCSV} className="btn btn-secondary btn-sm" title="Descargar datos en CSV/Excel">
-            <Download size={15} />
-            <span>Exportar CSV</span>
-          </button>
           <button onClick={loadData} className="btn btn-secondary btn-sm">
             <RefreshCw size={15} />
             <span>Actualizar</span>

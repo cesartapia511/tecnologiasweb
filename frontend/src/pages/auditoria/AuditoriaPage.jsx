@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { accesosService } from '../../services/dataServices';
-import { StatusBadge, RoleBadge } from '../../components/common/Badge';
-import { ShieldCheck, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { RoleBadge } from '../../components/common/Badge';
+import { RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export const AuditoriaPage = () => {
   const [accesos, setAccesos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const data = await accesosService.getAll();
@@ -21,7 +17,11 @@ export const AuditoriaPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   return (
     <div>

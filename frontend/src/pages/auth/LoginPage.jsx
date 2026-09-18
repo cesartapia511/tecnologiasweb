@@ -28,8 +28,8 @@ export const LoginPage = () => {
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
   const [carreras, setCarreras] = useState(UPDS_CARRERAS_DEFAULT);
 
-  // Login Form (Exclusivo por Correo Electrónico)
-  const [correo, setCorreo] = useState('');
+  // Login Form (Usuario o Correo Electrónico)
+  const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -52,25 +52,34 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
     carrerasService
       .getAll()
       .then((data) => {
-        if (data && Array.isArray(data) && data.length > 0) {
+        if (isMounted && data && Array.isArray(data) && data.length > 0) {
           setCarreras(data);
         }
       })
       .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const setTestCredentials = (user, pass) => {
+    setUsuario(user);
+    setContrasena(pass);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!correo || !contrasena) {
-      showError('Por favor ingresa tu correo institucional y contraseña');
+    if (!usuario.trim() || !contrasena) {
+      showError('Por favor ingresa tu usuario o correo institucional y contraseña');
       return;
     }
     setLoading(true);
-    // El backend autentica tanto por correo como por usuario
-    const res = await login(correo, contrasena);
+    // El backend autentica tanto por nombre de usuario como por correo
+    const res = await login(usuario.trim(), contrasena);
     setLoading(false);
     if (res.success) {
       showSuccess(`¡Bienvenido(a), ${res.user.nombre}!`);
@@ -95,7 +104,7 @@ export const LoginPage = () => {
     setLoading(false);
     if (res.success) {
       showSuccess('¡Cuenta creada exitosamente en la base de datos! Iniciando sesión...');
-      const loginRes = await login(regData.correo, regData.clave);
+      const loginRes = await login(regData.usuario || regData.correo, regData.clave);
       if (loginRes.success) {
         navigate('/dashboard');
       } else {
@@ -255,34 +264,34 @@ export const LoginPage = () => {
           </div>
 
           {activeTab === 'login' ? (
-            /* Formulario de Login Estrictamente por Correo */
+            /* Formulario de Login por Usuario o Correo */
             <form onSubmit={handleLogin}>
-              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
                 <h3 style={{ fontSize: '1.35rem', color: 'var(--upds-blue-dark)', marginBottom: '0.2rem' }}>
                   Acceso al Sistema
                 </h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  Ingresa tu correo institucional registrado
+                  Ingresa tu usuario o correo institucional registrado
                 </p>
               </div>
 
               <div className="form-group">
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Mail size={15} color="var(--upds-blue)" />
-                  <span>Correo Electrónico Institucional</span>
+                  <span>Usuario o Correo Institucional</span>
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   className="form-control"
-                  placeholder="ejemplo@upds.net.bo o admin@tutorias.local"
-                  value={correo}
-                  onChange={(e) => setCorreo(e.target.value)}
+                  placeholder="admin, tutor1, estudiante1 o correo..."
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
                   required
                   autoFocus
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Lock size={15} color="var(--upds-blue)" />
                   <span>Contraseña</span>
@@ -295,6 +304,39 @@ export const LoginPage = () => {
                   onChange={(e) => setContrasena(e.target.value)}
                   required
                 />
+              </div>
+
+              {/* Botones de credenciales de prueba oficiales */}
+              <div style={{ marginBottom: '1.25rem', background: '#f8fafc', padding: '0.65rem 0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.4rem', fontWeight: 600 }}>
+                  Usuarios de prueba oficiales (clic para autocompletar):
+                </div>
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '0.72rem', padding: '3px 7px' }}
+                    onClick={() => setTestCredentials('admin', 'password')}
+                  >
+                    👑 Admin (admin)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '0.72rem', padding: '3px 7px' }}
+                    onClick={() => setTestCredentials('tutor1', 'password')}
+                  >
+                    👨‍🏫 Tutor (tutor1)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '0.72rem', padding: '3px 7px' }}
+                    onClick={() => setTestCredentials('estudiante1', 'password')}
+                  >
+                    🎓 Alumno (estudiante1)
+                  </button>
+                </div>
               </div>
 
               <button

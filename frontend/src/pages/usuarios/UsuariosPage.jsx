@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usuariosService, rolesService } from '../../services/dataServices';
 import { useToast } from '../../context/ToastContext';
 import { RoleBadge, StatusBadge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { Plus, Search, Edit2, Trash2, UserPlus, RefreshCw } from 'lucide-react';
+import { Search, Edit2, Trash2, UserPlus, RefreshCw } from 'lucide-react';
 
 export const UsuariosPage = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -34,11 +34,7 @@ export const UsuariosPage = () => {
 
   const { showSuccess, showError } = useToast();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [uData, rData] = await Promise.all([
@@ -52,7 +48,11 @@ export const UsuariosPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleOpenCreate = () => {
     setEditingUser(null);
@@ -129,30 +129,6 @@ export const UsuariosPage = () => {
     return matchSearch && matchRole;
   });
 
-  const handleExportCSV = () => {
-    if (!usuarios || usuarios.length === 0) return;
-    const headers = ['ID', 'Usuario', 'Nombre', 'Apellido', 'Correo', 'Rol', 'Estado', 'Telefono', 'Fecha Registro'];
-    const rows = filtered.map((u) => [
-      u.id_usuario,
-      `"${u.usuario}"`,
-      `"${u.nombre}"`,
-      `"${u.apellido}"`,
-      `"${u.correo}"`,
-      `"${u.nombre_rol}"`,
-      `"${u.estado}"`,
-      `"${u.telefono || ''}"`,
-      `"${u.fecha_registro || ''}"`,
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const link = document.createElement('a');
-    link.href = encodeURI(csvContent);
-    link.download = `usuarios_upds_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showSuccess('Listado de usuarios exportado a CSV');
-  };
-
   return (
     <div>
       {/* Header Sección */}
@@ -164,9 +140,6 @@ export const UsuariosPage = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button onClick={handleExportCSV} className="btn btn-secondary btn-sm" title="Descargar datos en Excel / CSV">
-            <span>Exportar CSV</span>
-          </button>
           <button onClick={handleOpenCreate} className="btn btn-primary">
             <UserPlus size={18} />
             <span>Nuevo Usuario</span>

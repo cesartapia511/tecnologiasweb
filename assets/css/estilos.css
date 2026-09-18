@@ -1,0 +1,86 @@
+/* ==========================================================================
+   SISTEMA WEB DE APOYO ACADÉMICO PARA TUTORÍAS - UPDS TARIJA
+   Archivo de Estilos Globales: assets/css/estilos.css
+   Patrón de Arquitectura: Modelo - Vista - Controlador (MVC)
+   ========================================================================== */
+
+:root {
+  --upds-azul-primario: #005aa3;
+  --upds-azul-medio: #003f7f;
+  --upds-azul-oscuro: #00234a;
+  --upds-azul-cielo: #0070c0;
+  --upds-amarillo: #f59e0b;
+  --color-fondo: #f1f5f9;
+  --color-texto: #1e293b;
+  --color-borde: #e2e8f0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Barra de Navegación Institucional */
+.navbar-custom {
+  background: linear-gradient(135deg, var(--upds-azul-oscuro) 0%, var(--upds-azul-medio) 55%, var(--upds-azul-primario) 100%);
+  border-bottom: 2px solid var(--upds-azul-cielo);
+}
+
+.navbar-brand img {
+  height: 38px;
+  object-fit: contain;
+}
+
+/* Tarjetas y Contenedores */
+.card-custom {
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+}
+
+/* Badges de Roles */
+.badge-admin {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.badge-tutor {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+.badge-estudiante {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* Reglas de Impresión y Exportación a PDF Oficial */
+@media print {
+  .navbar, .btn, .nav, .no-print, footer, .alert {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+  .card {
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

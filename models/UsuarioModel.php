@@ -70,16 +70,63 @@ class UsuarioModel
     }
 
     public function obtenerPorUsuario($usuario) {
-    $sql = "SELECT u.*, r.nombre_rol 
-            FROM usuarios u
-            JOIN roles r ON u.id_rol = r.id_rol
-            WHERE u.usuario = :usuario1 OR u.correo = :usuario2
-            LIMIT 1";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([
-        'usuario1' => $usuario,
-        'usuario2' => $usuario
-    ]);
-    return $stmt->fetch();
-}
+        $sql = "SELECT u.*, r.nombre_rol 
+                FROM usuarios u
+                JOIN roles r ON u.id_rol = r.id_rol
+                WHERE u.usuario = :usuario1 OR u.correo = :usuario2
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'usuario1' => $usuario,
+            'usuario2' => $usuario
+        ]);
+        return $stmt->fetch();
+    }
+
+    public function registrar($datos) {
+        $this->pdo->beginTransaction();
+        try {
+            $hash = password_hash($datos['clave'], PASSWORD_DEFAULT);
+            $id_rol = !empty($datos['id_rol']) ? intval($datos['id_rol']) : 3; // 3 = estudiante
+
+            $sql = "INSERT INTO usuarios (id_rol, nombre, apellido, correo, usuario, contrasena_hash, estado)
+                    VALUES (:id_rol, :nombre, :apellido, :correo, :usuario, :hash, 'activo')";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':id_rol'   => $id_rol,
+                ':nombre'   => trim($datos['nombre']),
+                ':apellido' => trim($datos['apellido']),
+                ':correo'   => trim($datos['correo']),
+                ':usuario'  => trim($datos['usuario']),
+                ':hash'     => $hash,
+            ]);
+
+            $id_usuario = $this->pdo->lastInsertId();
+
+            if ($id_rol === 3) {
+                // Registro de Estudiante
+                $id_carrera = !empty($datos['id_carrera']) ? intval($datos['id_carrera']) : 1;
+                $semestre = !empty($datos['semestre']) ? intval($datos['semestre']) : 1;
+                $ru = !empty($datos['registro_universitario']) 
+                    ? trim($datos['registro_universitario']) 
+                    : 'RU-' . date('Y') . '-' . rand(10000, 99999);
+
+                $stmtEst = $this->pdo->prepare("INSERT INTO estudiantes (id_usuario, id_carrera, semestre, registro_universitario) VALUES (?, ?, ?, ?)");
+                $stmtEst->execute([$id_usuario, $id_carrera, $semestre, $ru]);
+            } else if ($id_rol === 2) {
+                // Registro de Docente Tutor
+                $especialidad = !empty($datos['especialidad']) ? trim($datos['especialidad']) : 'Docente Tutor UPDS Tarija';
+                $biografia = !empty($datos['biografia']) ? trim($datos['biografia']) : 'Docente tutor comprometido con el reforzamiento pedagógico.';
+
+                $stmtTut = $this->pdo->prepare("INSERT INTO tutores (id_usuario, especialidad, biografia) VALUES (?, ?, ?)");
+                $stmtTut->execute([$id_usuario, $especialidad, $biografia]);
+            }
+
+            $this->pdo->commit();
+            return $id_usuario;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
 }

@@ -1,0 +1,72 @@
+/* ==========================================================================
+   ESTILOS DE AUTENTICACIÓN Y REGISTRO - UPDS TARIJA
+   Archivo: assets/css/auth.css
+   ========================================================================== */
+
+body.auth-page {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: radial-gradient(circle at 50% 20%, #003f7f 0%, #00234a 60%, #001226 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  color: #1e293b;
+}
+
+.auth-card {
+  max-width: 480px;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.auth-header {
+  background: linear-gradient(135deg, #00234a 0%, #003f7f 100%);
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  color: #ffffff;
+  border-bottom: 3px solid #0070c0;
+}
+
+.auth-header img {
+  height: 52px;
+  object-fit: contain;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #64748b;
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link.active {
+  color: #005aa3;
+  border-bottom: 3px solid #005aa3;
+  background: transparent;
+}
+
+.btn-upds {
+  background: linear-gradient(135deg, #005aa3 0%, #003f7f 100%);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.btn-upds:hover {
+  background: linear-gradient(135deg, #004b8a 0%, #003163 100%);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #005aa3;
+  box-shadow: 0 0 0 0.2rem rgba(0, 90, 163, 0.15);
+}

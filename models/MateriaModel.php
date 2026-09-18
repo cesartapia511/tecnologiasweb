@@ -20,6 +20,25 @@ class MateriaModel
         return $this->pdo->query($sql)->fetchAll();
     }
 
+    public function obtenerTodas()
+    {
+        $sql = "SELECT m.id_materia, m.nombre_materia, m.id_carrera,
+                       c.nombre_carrera,
+                       (SELECT COUNT(*) FROM tutor_materia tm WHERE tm.id_materia = m.id_materia) AS total_tutores
+                FROM materias m
+                LEFT JOIN carreras c ON m.id_carrera = c.id_carrera
+                ORDER BY m.nombre_materia ASC";
+
+        return $this->pdo->query($sql)->fetchAll();
+    }
+
+    public function obtenerPorCarrera($id_carrera)
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM materias WHERE id_carrera = :id_carrera ORDER BY nombre_materia ASC");
+        $stmt->execute([':id_carrera' => $id_carrera]);
+        return $stmt->fetchAll();
+    }
+
     public function obtenerPorId($id)
     {
         $stmt = $this->pdo->prepare(

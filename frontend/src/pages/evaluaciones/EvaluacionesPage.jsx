@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { evaluacionesService } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Star, MessageSquare, BookOpen, Calendar, RefreshCw } from 'lucide-react';
+import { Star, BookOpen, RefreshCw } from 'lucide-react';
 
 export const EvaluacionesPage = () => {
   const { user, isDocente } = useAuth();
@@ -10,11 +10,7 @@ export const EvaluacionesPage = () => {
   const [loading, setLoading] = useState(true);
   const { showError } = useToast();
 
-  useEffect(() => {
-    loadData();
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const data = await evaluacionesService.getAll(isDocente ? user?.id_tutor : null);
@@ -24,7 +20,11 @@ export const EvaluacionesPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isDocente, user?.id_tutor, showError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   return (
     <div>

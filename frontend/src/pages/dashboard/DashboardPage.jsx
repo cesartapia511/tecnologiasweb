@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { dashboardService } from '../../services/dataServices';
 import { StatusBadge } from '../../components/common/Badge';
 import { Link } from 'react-router-dom';
 import {
   Users,
-  GraduationCap,
   BookOpen,
   CalendarCheck,
   Clock,
@@ -13,19 +12,14 @@ import {
   Star,
   PlusCircle,
   CalendarDays,
-  ExternalLink,
 } from 'lucide-react';
 
 export const DashboardPage = () => {
-  const { user, role, isAdmin, isDocente, isEstudiante } = useAuth();
+  const { user, isAdmin, isDocente, isEstudiante } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStats();
-  }, [user]);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -41,7 +35,11 @@ export const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isDocente, isEstudiante, user]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   return (
     <div>

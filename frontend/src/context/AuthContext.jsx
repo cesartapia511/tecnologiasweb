@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { authService } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -67,6 +67,8 @@ export const AuthProvider = ({ children }) => {
         return true; // Docente y estudiante tienen su vista
       case 'evaluaciones':
         return isDocente; // Docente ve sus evaluaciones
+      case 'roles':
+        return false; // Solo admin
       case 'auditoria':
         return false; // Solo admin
       default:

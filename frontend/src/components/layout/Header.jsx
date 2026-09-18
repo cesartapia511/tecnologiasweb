@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { RoleBadge } from '../common/Badge';
-import { Menu, LogOut, User, Shield, KeyRound, ChevronDown, Check } from 'lucide-react';
+import { Menu, LogOut, User, ChevronDown, Check } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
