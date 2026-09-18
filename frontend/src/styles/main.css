@@ -1,0 +1,877 @@
+/* ==========================================================================
+   SISTEMA DE TUTORÍAS - UPDS TARIJA
+   Design System & Modern Aesthetic Styles
+   ========================================================================== */
+
+:root {
+  /* Paleta Oficial Portal UPDS Tarija (Basado en portal.upds.edu.bo) */
+  --upds-portal-blue: #004b87;
+  --upds-portal-dark: #002b54;
+  --upds-portal-light: #0066b2;
+  --upds-cyan: #00a2e8;
+  --upds-blue-dark: #001f3f;
+  --upds-blue: #00407a;
+  --upds-blue-light: #00599e;
+  --upds-blue-subtle: #e6f0fa;
+  
+  --upds-red: #c8102e;
+  --upds-red-dark: #9b111e;
+  --upds-red-light: #e63946;
+  --upds-red-subtle: #fde8eb;
+  
+  --upds-gold: #f59e0b;
+  --upds-gold-hover: #d97706;
+  --upds-gold-subtle: #fef3c7;
+  
+  --upds-green: #10b981;
+  --upds-green-subtle: #d1fae5;
+
+  /* Superficies y Neutros */
+  --bg-app: #f0f4f9;
+  --bg-card: #ffffff;
+  --bg-sidebar: #002b54;
+  --bg-sidebar-hover: #003b70;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --text-white: #ffffff;
+  
+  --border-color: #dbe4ef;
+  --border-focus: #004b87;
+  
+  /* Sombras y Radios */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset y base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--upds-blue-dark);
+}
+
+/* Layout General */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+/* Sidebar */
+.sidebar {
+  width: 270px;
+  background: linear-gradient(180deg, var(--bg-sidebar) 0%, #031221 100%);
+  color: var(--text-white);
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-header {
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+}
+
+.sidebar-brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.sidebar-brand-subtitle {
+  font-size: 0.75rem;
+  color: var(--upds-gold);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  padding: 1.25rem 0.85rem;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-section-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: #6c8ba8;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.6rem 0.75rem 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.9rem;
+  color: #c0d3e5;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  position: relative;
+}
+
+.nav-link:hover {
+  background: var(--bg-sidebar-hover);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, var(--upds-red) 0%, var(--upds-red-dark) 100%);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(200, 16, 46, 0.35);
+}
+
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  height: 70%;
+  width: 4px;
+  background: var(--upds-gold);
+  border-radius: 0 4px 4px 0;
+}
+
+.sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Header Superior */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header {
+  height: 70px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-lg);
+  width: 320px;
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.header-search:focus-within {
+  border-color: var(--upds-blue);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 39, 68, 0.1);
+}
+
+.header-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.88rem;
+  width: 100%;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-lg);
+  transition: var(--transition);
+}
+
+.user-profile-badge:hover {
+  background: #f1f5f9;
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--upds-blue) 0%, var(--upds-red) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Contenido Principal */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Tarjetas y Contenedores */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Stat Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+}
+
+.stat-card.primary::before { background: var(--upds-blue); }
+.stat-card.danger::before { background: var(--upds-red); }
+.stat-card.warning::before { background: var(--upds-gold); }
+.stat-card.success::before { background: var(--upds-green); }
+
+.stat-icon-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.stat-icon-wrapper.primary { background: var(--upds-blue-subtle); color: var(--upds-blue); }
+.stat-icon-wrapper.danger { background: var(--upds-red-subtle); color: var(--upds-red); }
+.stat-icon-wrapper.warning { background: var(--upds-gold-subtle); color: var(--upds-gold-hover); }
+.stat-icon-wrapper.success { background: var(--upds-green-subtle); color: var(--upds-green); }
+
+.stat-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  font-family: var(--font-heading);
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--upds-blue) 0%, var(--upds-blue-light) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 39, 68, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #021a2d 0%, var(--upds-blue) 100%);
+  box-shadow: 0 4px 12px rgba(0, 39, 68, 0.35);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--upds-red) 0%, var(--upds-red-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(200, 16, 46, 0.25);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #a70c23 0%, var(--upds-red-dark) 100%);
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-outline:hover {
+  background: #f8fafc;
+  border-color: var(--upds-blue);
+  color: var(--upds-blue);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Tablas */
+.table-responsive {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background: white;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 0.95rem 1.1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--text-main);
+}
+
+.data-table tbody tr {
+  transition: var(--transition);
+}
+
+.data-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.badge-admin {
+  background: var(--upds-red-subtle);
+  color: var(--upds-red-dark);
+  border-color: #fecdd3;
+}
+
+.badge-tutor {
+  background: var(--upds-blue-subtle);
+  color: var(--upds-blue);
+  border-color: #bfdbfe;
+}
+
+.badge-estudiante {
+  background: var(--upds-green-subtle);
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.badge-pendiente {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.badge-confirmada {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+.badge-realizada {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.badge-cancelada {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+
+/* Modales */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 26, 46, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 50;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius-xl);
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  animation: slideUp 0.25s ease-out;
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+/* Formularios */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+  background: #ffffff;
+}
+
+.form-control:focus {
+  border-color: var(--upds-blue);
+  box-shadow: 0 0 0 3px rgba(0, 39, 68, 0.12);
+}
+
+/* Alertas & Toasts */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  font-size: 0.88rem;
+  font-weight: 500;
+  border-left: 5px solid;
+  animation: slideLeft 0.3s ease-out;
+}
+
+.toast.success { border-left-color: var(--upds-green); }
+.toast.error { border-left-color: var(--upds-red); }
+
+/* Banner Institucional UPDS Tarija */
+.upds-banner {
+  background: radial-gradient(circle at 80% 20%, #0066b2 0%, #004b87 40%, #002b54 100%);
+  color: white;
+  border-radius: var(--radius-xl);
+  padding: 2.2rem 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 43, 84, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.upds-banner::after {
+  content: '';
+  position: absolute;
+  right: -50px;
+  bottom: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(0, 162, 232, 0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Portal UPDS Tarija (Inspirado en portal.upds.edu.bo) */
+.portal-container {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 10%, #005aa3 0%, #003f7f 45%, #00234a 100%);
+  display: flex;
+  flex-direction: column;
+  color: white;
+  padding: 1.5rem 2rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto 1.5rem;
+  width: 100%;
+}
+
+.portal-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.portal-brand-logo {
+  width: 52px;
+  height: 52px;
+}
+
+.portal-online-badge {
+  text-align: right;
+}
+
+.portal-online-text {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.portal-online-text span {
+  color: var(--upds-cyan);
+  font-weight: 700;
+}
+
+.portal-online-sub {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.5px;
+}
+
+/* Estilos para Formularios, Inputs y Selects */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.form-control {
+  width: 100%;
+  height: 44px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.92rem;
+  font-family: var(--font-body);
+  color: var(--text-main);
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: var(--transition);
+  display: block;
+}
+
+.form-control:focus {
+  border-color: var(--upds-blue);
+  box-shadow: 0 0 0 3px rgba(0, 64, 122, 0.15);
+}
+
+select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300407a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 14px 10px;
+  padding-right: 2.5rem;
+}
+
+select.form-control option {
+  background-color: #ffffff;
+  color: #1e293b;
+  padding: 8px 12px;
+}
+
+/* Tabs del portal */
+.portal-tabs {
+  display: flex;
+  background: #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.portal-tab-btn {
+  flex: 1;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  color: #64748b;
+  background: transparent;
+  text-align: center;
+}
+
+.portal-tab-btn.active {
+  background: white;
+  color: var(--upds-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Botones circulares con efecto cristal 3D (como en el portal oficial) */
+.upds-circle-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 2.5rem auto 1rem;
+  width: 100%;
+}
+
+.upds-circle-btn {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #00a2e8 0%, #00599e 50%, #002d59 100%);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35), inset 0 2px 5px rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 0.5rem;
+  line-height: 1.15;
+  transition: all 0.25s ease-out;
+  cursor: pointer;
+}
+
+.upds-circle-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.45), inset 0 3px 8px rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    left: -270px;
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .header-search {
+    width: 200px;
+  }
+
+  .upds-circle-btn {
+    width: 90px;
+    height: 90px;
+    font-size: 0.62rem;
+  }
+}
