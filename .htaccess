@@ -1,0 +1,7 @@
+# Configuración Apache para UPDS Tarija
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Pasar encabezado de autorización a PHP
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+</IfModule>

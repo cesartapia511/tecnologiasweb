@@ -57,22 +57,31 @@ function cleanMojibake($data) {
     return $data;
 }
 
-function jsonSuccess($data = null, $message = 'Operación exitosa', $code = 200) {
+function jsonSuccess($data = null, $message = 'Operación realizada correctamente', $code = 200) {
     http_response_code($code);
     echo json_encode([
         'success' => true,
         'message' => cleanMojibake($message),
-        'data' => cleanMojibake($data)
+        'data'    => cleanMojibake($data)
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-function jsonError($message = 'Error en la petición', $code = 400, $errors = []) {
+function jsonError($message = 'Error en la petición', $code = 400, $motivo = null, $errors = []) {
     http_response_code($code);
-    echo json_encode([
+    $response = [
         'success' => false,
         'message' => cleanMojibake($message),
-        'errors' => cleanMojibake($errors)
-    ], JSON_UNESCAPED_UNICODE);
+    ];
+    if ($motivo !== null && $motivo !== '') {
+        $response['motivo'] = cleanMojibake($motivo);
+    }
+    if (!empty($errors)) {
+        $response['errors'] = cleanMojibake($errors);
+    }
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+require_once __DIR__ . '/../includes/auth_helper.php';
+
