@@ -78,3 +78,10 @@ export const rolesService = {
 export const accesosService = {
   getAll: async () => (await api.get('/accesos/index.php')).data,
 };
+
+export const reportesService = {
+  getReportes: async (filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    return (await api.get(`/reportes/index.php${query ? `?${query}` : ''}`)).data;
+  }
+};

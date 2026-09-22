@@ -16,6 +16,7 @@ import { EvaluacionesPage } from '../pages/evaluaciones/EvaluacionesPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
 import { EstudiantesPage } from '../pages/estudiantes/EstudiantesPage';
 import { RolesPage } from '../pages/roles/RolesPage';
+import { ReportesPage } from '../pages/reportes/ReportesPage';
 
 import { MiPerfilPage } from '../pages/portal-estudiante/MiPerfilPage';
 import { PerfilTutor } from '../pages/tutores/PerfilTutor';
@@ -162,6 +163,15 @@ export const AppRouter = () => {
             element={
               <RoleGuard module="auditoria">
                 <AuditoriaPage />
+              </RoleGuard>
+            }
+          />
+          
+          <Route
+            path="/reportes"
+            element={
+              <RoleGuard module="reportes">
+                <ReportesPage />
               </RoleGuard>
             }
           />

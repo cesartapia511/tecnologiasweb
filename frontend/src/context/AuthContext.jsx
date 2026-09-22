@@ -71,6 +71,8 @@ export const AuthProvider = ({ children }) => {
         return false; // Solo admin
       case 'auditoria':
         return false; // Solo admin
+      case 'reportes':
+        return false; // Solo admin
       default:
         return false;
     }

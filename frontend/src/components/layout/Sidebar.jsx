@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   LogOut,
   User,
+  BarChart3,
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -280,6 +281,17 @@ export const Sidebar = ({ isOpen, onClose }) => {
               >
                 <Users size={18} />
                 <span>Cuentas de Usuario</span>
+              </NavLink>
+            )}
+
+            {canAccess('reportes') && (
+              <NavLink
+                to="/reportes"
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                onClick={onClose}
+              >
+                <BarChart3 size={18} />
+                <span>Reportes y Estadísticas</span>
               </NavLink>
             )}
 
