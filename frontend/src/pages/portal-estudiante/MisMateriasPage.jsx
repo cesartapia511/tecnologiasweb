@@ -3,8 +3,9 @@ import { useAuth } from '../../context/AuthContext';
 import { materiasService } from '../../services/dataServices';
 import { BookOpen, Users, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { MisMateriasTutor } from '../tutores/MisMateriasTutor';
 
-export const MisMateriasPage = () => {
+const MisMateriasEstudiante = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [materias, setMaterias] = useState([]);
@@ -99,4 +100,14 @@ export const MisMateriasPage = () => {
       )}
     </div>
   );
+};
+
+export const MisMateriasPage = () => {
+  const { isDocente } = useAuth();
+  
+  if (isDocente) {
+    return <MisMateriasTutor />;
+  }
+  
+  return <MisMateriasEstudiante />;
 };

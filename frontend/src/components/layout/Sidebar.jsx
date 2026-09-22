@@ -121,6 +121,43 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </>
         )}
 
+        {role === 'tutor' && (
+          <>
+            <NavLink
+              to="/mi-calendario"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <CalendarClock size={18} />
+              <span>Mi Calendario</span>
+            </NavLink>
+            <NavLink
+              to="/mis-materias"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <BookOpen size={18} />
+              <span>Mis Materias</span>
+            </NavLink>
+            <NavLink
+              to="/mis-estudiantes"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <Users size={18} />
+              <span>Mis Estudiantes</span>
+            </NavLink>
+            <NavLink
+              to="/mis-evaluaciones"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <Star size={18} />
+              <span>Mis Evaluaciones</span>
+            </NavLink>
+          </>
+        )}
+
         {canAccess('disponibilidad') && (
           <NavLink
             to="/disponibilidad"

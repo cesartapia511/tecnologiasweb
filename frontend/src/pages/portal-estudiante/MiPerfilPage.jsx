@@ -3,8 +3,9 @@ import { User, Mail, Phone, Book, Hash, Calendar, Shield, Save } from 'lucide-re
 import { estudiantesService } from '../../services/dataServices';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { PerfilTutor } from '../tutores/PerfilTutor';
 
-export const MiPerfilPage = () => {
+const PerfilEstudiante = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
   
@@ -85,7 +86,7 @@ export const MiPerfilPage = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', alignItems: 'start' }}>
         
         {/* Panel Izquierdo: Resumen y Datos No Editables */}
         <div className="card">
@@ -213,4 +214,15 @@ export const MiPerfilPage = () => {
       </div>
     </div>
   );
+};
+
+export const MiPerfilPage = () => {
+  const { isDocente, isEstudiante } = useAuth();
+  
+  if (isDocente) {
+    return <PerfilTutor />;
+  }
+  
+  // Default to student profile or for other roles
+  return <PerfilEstudiante />;
 };

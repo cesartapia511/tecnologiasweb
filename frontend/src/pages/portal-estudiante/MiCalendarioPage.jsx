@@ -3,8 +3,9 @@ import { useAuth } from '../../context/AuthContext';
 import { tutoriasService } from '../../services/dataServices';
 import { Calendar as CalendarIcon, Clock, MapPin, Video, User } from 'lucide-react';
 import { StatusBadge } from '../../components/common/Badge';
+import { CalendarioTutor } from '../tutores/CalendarioTutor';
 
-export const MiCalendarioPage = () => {
+const CalendarioEstudiante = () => {
   const { user } = useAuth();
   const [proximasTutorias, setProximasTutorias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,4 +92,14 @@ export const MiCalendarioPage = () => {
       )}
     </div>
   );
+};
+
+export const MiCalendarioPage = () => {
+  const { isDocente } = useAuth();
+  
+  if (isDocente) {
+    return <CalendarioTutor />;
+  }
+  
+  return <CalendarioEstudiante />;
 };

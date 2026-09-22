@@ -20,6 +20,7 @@ import { MisMateriasPage } from '../pages/portal-estudiante/MisMateriasPage';
 import { TutorMateriaPage } from '../pages/portal-estudiante/TutorMateriaPage';
 import { MiCalendarioPage } from '../pages/portal-estudiante/MiCalendarioPage';
 import { MisEvaluacionesPage } from '../pages/portal-estudiante/MisEvaluacionesPage';
+import { MisEstudiantesTutorPage } from '../pages/tutores/MisEstudiantesTutorPage';
 
 export const AppRouter = () => {
   return (
@@ -42,8 +43,11 @@ export const AppRouter = () => {
           {/* Perfil del Usuario */}
           <Route path="/mi-perfil" element={<MiPerfilPage />} />
           
-          {/* Módulo Estudiante */}
+          {/* Módulo Estudiante / Tutor Híbrido */}
           <Route path="/mis-materias" element={<MisMateriasPage />} />
+          <Route path="/mis-estudiantes" element={<MisEstudiantesTutorPage />} />
+          
+          {/* Módulo Estudiante */}
           <Route path="/materias/:id/tutores" element={<TutorMateriaPage />} />
           <Route path="/mi-calendario" element={<MiCalendarioPage />} />
           <Route path="/mis-evaluaciones" element={<MisEvaluacionesPage />} />
@@ -133,3 +137,4 @@ export const AppRouter = () => {
     </BrowserRouter>
   );
 };
+

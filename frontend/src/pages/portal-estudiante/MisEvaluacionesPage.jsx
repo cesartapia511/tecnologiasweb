@@ -4,8 +4,9 @@ import { tutoriasService, evaluacionesService } from '../../services/dataService
 import { useToast } from '../../context/ToastContext';
 import { Star, FileText, CheckCircle } from 'lucide-react';
 import { Modal } from '../../components/common/Modal';
+import { EvaluacionesTutor } from '../tutores/EvaluacionesTutor';
 
-export const MisEvaluacionesPage = () => {
+const EvaluacionesEstudiante = () => {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
   const [tutorias, setTutorias] = useState([]);
@@ -214,4 +215,14 @@ export const MisEvaluacionesPage = () => {
       </Modal>
     </div>
   );
+};
+
+export const MisEvaluacionesPage = () => {
+  const { isDocente } = useAuth();
+
+  if (isDocente) {
+    return <EvaluacionesTutor />;
+  }
+
+  return <EvaluacionesEstudiante />;
 };

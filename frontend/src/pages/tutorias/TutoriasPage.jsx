@@ -31,6 +31,8 @@ export const TutoriasPage = () => {
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('todas');
 
+  const [searchTerm, setSearchTerm] = useState('');
+  
   // Modales
   const [isSolicitudOpen, setIsSolicitudOpen] = useState(false);
   const [isAtenderOpen, setIsAtenderOpen] = useState(false);
@@ -201,6 +203,22 @@ export const TutoriasPage = () => {
     setIsActaOpen(true);
   };
 
+  // Lógica de filtrado combinado
+  const filteredTutorias = tutorias.filter(t => {
+    // Filtro por Estado
+    if (filtroEstado !== 'todas' && t.estado !== filtroEstado) return false;
+    
+    // Filtro por Texto de Búsqueda
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchMateria = t.nombre_materia?.toLowerCase().includes(term);
+      const matchEstudiante = (t.estudiante_nombre + ' ' + t.estudiante_apellido).toLowerCase().includes(term);
+      const matchTutor = (t.tutor_nombre + ' ' + t.tutor_apellido).toLowerCase().includes(term);
+      return matchMateria || matchEstudiante || matchTutor;
+    }
+    return true;
+  });
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -231,18 +249,31 @@ export const TutoriasPage = () => {
         </div>
       </div>
 
-      {/* Pestañas de Filtrado por Estado */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-        {['todas', 'pendiente', 'confirmada', 'realizada', 'cancelada'].map(estado => (
-          <button
-            key={estado}
-            onClick={() => setFiltroEstado(estado)}
-            className={`btn ${filtroEstado === estado ? 'btn-primary' : 'btn-outline'}`}
-            style={{ textTransform: 'capitalize', borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.9rem' }}
-          >
-            {estado === 'todas' ? 'Todas' : estado === 'confirmada' ? 'Próximas (Confirmadas)' : estado}
-          </button>
-        ))}
+      {/* Pestañas de Filtrado por Estado y Búsqueda */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+          {['todas', 'pendiente', 'confirmada', 'realizada', 'cancelada'].map(estado => (
+            <button
+              key={estado}
+              onClick={() => setFiltroEstado(estado)}
+              className={`btn ${filtroEstado === estado ? 'btn-primary' : 'btn-outline'}`}
+              style={{ textTransform: 'capitalize', borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+            >
+              {estado === 'todas' ? 'Todas' : estado === 'confirmada' ? 'Próximas (Confirmadas)' : estado}
+            </button>
+          ))}
+        </div>
+        
+        <div style={{ flex: '1', minWidth: '250px', maxWidth: '350px' }}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Buscar por materia, estudiante..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ borderRadius: '20px', padding: '0.5rem 1rem' }}
+          />
+        </div>
       </div>
 
       {/* Lista / Cards de Tutorías */}
@@ -266,7 +297,7 @@ export const TutoriasPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {tutorias.filter(t => filtroEstado === 'todas' ? true : t.estado === filtroEstado).map((t) => (
+                {filteredTutorias.map((t) => (
                   <tr key={t.id_tutoria}>
                     <td style={{ fontWeight: 600, color: 'var(--upds-blue-dark)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -388,10 +419,10 @@ export const TutoriasPage = () => {
                     </td>
                   </tr>
                 ))}
-                {tutorias.filter(t => filtroEstado === 'todas' ? true : t.estado === filtroEstado).length === 0 && (
+                {filteredTutorias.length === 0 && (
                   <tr>
                     <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                      No hay tutorías que coincidan con el estado seleccionado.
+                      No hay tutorías que coincidan con los filtros seleccionados.
                     </td>
                   </tr>
                 )}
