@@ -13,7 +13,7 @@ import {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export const ReportesPage = () => {
-  const { addToast } = useToast();
+  const { showSuccess, showError, showInfo } = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   
@@ -41,7 +41,7 @@ export const ReportesPage = () => {
       const resMaterias = await materiasService.getAll();
       if (resMaterias?.data) setMaterias(resMaterias.data);
     } catch (error) {
-      addToast('Error al cargar opciones de filtros', 'error');
+      showError('Error al cargar opciones de filtros');
     }
   };
 
@@ -54,14 +54,14 @@ export const ReportesPage = () => {
       if (activeFilters.id_materia === 'Todas') delete activeFilters.id_materia;
       
       const res = await reportesService.getReportes(activeFilters);
-      if (res.success) {
-        setData(res.data);
-        if (isManualAction) addToast('Filtros aplicados correctamente', 'success');
+      if (res) {
+        setData(res);
+        if (isManualAction) showSuccess('Filtros aplicados correctamente');
       } else {
-        addToast(res.message || 'Error al cargar reportes', 'error');
+        showError('No se recibieron datos del servidor');
       }
     } catch (error) {
-      addToast(error.message || 'Error de conexión', 'error');
+      showError(error.message || 'Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ export const ReportesPage = () => {
 
   const exportToCSV = () => {
     if (!data || !data.tutorias_tabla || data.tutorias_tabla.length === 0) {
-      addToast('No hay datos para exportar', 'warning');
+      showInfo('No hay datos para exportar');
       return;
     }
     
@@ -109,7 +109,7 @@ export const ReportesPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    addToast('Reporte exportado exitosamente', 'success');
+    showSuccess('Reporte exportado exitosamente');
   };
 
   if (loading && !data) {
