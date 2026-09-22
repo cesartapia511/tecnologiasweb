@@ -9,6 +9,8 @@ import {
   UserPlus,
   LogIn,
   Mail,
+  KeyRound,
+  ArrowLeft
 } from 'lucide-react';
 
 const UPDS_CARRERAS_DEFAULT = [
@@ -31,6 +33,7 @@ export const LoginPage = () => {
   // Login Form (Usuario o Correo Electrónico)
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [recuperacionCorreo, setRecuperacionCorreo] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Register Form
@@ -112,6 +115,26 @@ export const LoginPage = () => {
       }
     } else {
       showError(res.message || 'Error al procesar el registro');
+    }
+  };
+
+  const handleRecuperacion = async (e) => {
+    e.preventDefault();
+    if (!recuperacionCorreo.trim()) {
+      showError('Ingresa tu correo institucional.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { default: api } = await import('../../services/api');
+      const response = await api.post('/auth/recuperar.php', { correo: recuperacionCorreo.trim() });
+      showSuccess(response.data?.message || 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.');
+      setActiveTab('login');
+      setRecuperacionCorreo('');
+    } catch (error) {
+      showError(error.response?.data?.message || 'Error al intentar recuperar la contraseña');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -244,24 +267,26 @@ export const LoginPage = () => {
           }}
         >
           {/* Selector de Pestañas: Iniciar Sesión / Registrarse */}
-          <div className="portal-tabs">
-            <button
-              type="button"
-              className={`portal-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
-              onClick={() => setActiveTab('login')}
-            >
-              <LogIn size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} />
-              Iniciar Sesión
-            </button>
-            <button
-              type="button"
-              className={`portal-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
-              onClick={() => setActiveTab('register')}
-            >
-              <UserPlus size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} />
-              Registrarse
-            </button>
-          </div>
+          {activeTab !== 'recovery' && (
+            <div className="portal-tabs">
+              <button
+                type="button"
+                className={`portal-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
+                onClick={() => setActiveTab('login')}
+              >
+                <LogIn size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} />
+                Iniciar Sesión
+              </button>
+              <button
+                type="button"
+                className={`portal-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
+                onClick={() => setActiveTab('register')}
+              >
+                <UserPlus size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} />
+                Registrarse
+              </button>
+            </div>
+          )}
 
           {activeTab === 'login' ? (
             /* Formulario de Login por Usuario o Correo */
@@ -353,10 +378,60 @@ export const LoginPage = () => {
                 )}
               </button>
 
-              <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
+              <div style={{ marginTop: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('recovery'); }} style={{ color: 'var(--upds-blue)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>
+                  ¿Olvidaste tu contraseña?
+                </a>
                 <small style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                   ¿Aún no tienes cuenta? Pulsa en la pestaña <strong>Registrarse</strong>.
                 </small>
+              </div>
+            </form>
+          ) : activeTab === 'recovery' ? (
+            /* Formulario de Recuperación */
+            <form onSubmit={handleRecuperacion}>
+              <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'inline-flex', padding: '12px', background: 'var(--upds-blue-subtle)', borderRadius: '50%', color: 'var(--upds-blue)', marginBottom: '0.5rem' }}>
+                  <KeyRound size={28} />
+                </div>
+                <h3 style={{ fontSize: '1.35rem', color: 'var(--upds-blue-dark)', marginBottom: '0.2rem' }}>
+                  Recuperar Contraseña
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  Ingresa tu correo institucional registrado
+                </p>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Mail size={15} color="var(--upds-blue)" />
+                  <span>Correo Institucional</span>
+                </label>
+                <input
+                  type="email"
+                  className="form-control"
+                  placeholder="usuario@upds.net.bo"
+                  value={recuperacionCorreo}
+                  onChange={(e) => setRecuperacionCorreo(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '0.8rem', fontSize: '0.98rem', marginBottom: '1rem' }}
+                disabled={loading}
+              >
+                {loading ? 'Procesando...' : 'Restablecer mi Contraseña'}
+              </button>
+
+              <div style={{ textAlign: 'center' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('login'); }} style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <ArrowLeft size={14} />
+                  Volver al inicio de sesión
+                </a>
               </div>
             </form>
           ) : (

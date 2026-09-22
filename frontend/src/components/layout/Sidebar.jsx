@@ -21,7 +21,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       {/* Brand Header con Logo Oficial UPDS */}
-      <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+      <div
+        className="sidebar-header"
+        style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}
+      >
         <div
           style={{
             width: '46px',
@@ -42,11 +45,23 @@ export const Sidebar = ({ isOpen, onClose }) => {
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         </div>
+
         <div>
-          <div className="sidebar-brand-title" style={{ fontSize: '1.05rem', fontWeight: 800 }}>
+          <div
+            className="sidebar-brand-title"
+            style={{ fontSize: '1.05rem', fontWeight: 800 }}
+          >
             UPDS Tarija
           </div>
-          <div className="sidebar-brand-subtitle" style={{ fontSize: '0.7rem', color: 'var(--upds-cyan)', letterSpacing: '0.4px' }}>
+
+          <div
+            className="sidebar-brand-subtitle"
+            style={{
+              fontSize: '0.7rem',
+              color: 'var(--upds-cyan)',
+              letterSpacing: '0.4px',
+            }}
+          >
             Portal de Tutorías
           </div>
         </div>
@@ -55,6 +70,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       {/* Navegación por Módulos */}
       <nav className="sidebar-nav">
         <div className="nav-section-title">Navegación General</div>
+
         <NavLink
           to="/dashboard"
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -64,17 +80,25 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <span>Panel de Control</span>
         </NavLink>
 
-        <NavLink
-          to="/mi-perfil"
-          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          onClick={onClose}
-        >
-          <User size={18} />
-          <span>Mi Perfil</span>
-        </NavLink>
+        {/* Mi Perfil:
+            Estudiante -> Mi Perfil Académico
+            Tutor -> Mi Perfil Profesional
+            Administrador -> utiliza el perfil/modal del Header
+        */}
+        {role !== 'administrador' && (
+          <NavLink
+            to="/mi-perfil"
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            onClick={onClose}
+          >
+            <User size={18} />
+            <span>Mi Perfil</span>
+          </NavLink>
+        )}
 
         {/* Tutorías y Asesoría Académica */}
         <div className="nav-section-title">Acompañamiento Académico</div>
+
         {canAccess('tutorias') && (
           <NavLink
             to="/tutorias"
@@ -82,6 +106,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             onClick={onClose}
           >
             <CalendarDays size={18} />
+
             <span>
               {role === 'estudiante'
                 ? 'Mis Tutorías'
@@ -92,6 +117,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
         )}
 
+        {/* Opciones del Estudiante */}
         {role === 'estudiante' && (
           <>
             <NavLink
@@ -102,6 +128,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <CalendarClock size={18} />
               <span>Mi Calendario</span>
             </NavLink>
+
             <NavLink
               to="/mis-materias"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -110,6 +137,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <BookOpen size={18} />
               <span>Mis Materias</span>
             </NavLink>
+
             <NavLink
               to="/mis-evaluaciones"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -121,6 +149,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </>
         )}
 
+        {/* Opciones del Tutor */}
         {role === 'tutor' && (
           <>
             <NavLink
@@ -131,6 +160,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <CalendarClock size={18} />
               <span>Mi Calendario</span>
             </NavLink>
+
             <NavLink
               to="/mis-materias"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -139,6 +169,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <BookOpen size={18} />
               <span>Mis Materias</span>
             </NavLink>
+
             <NavLink
               to="/mis-estudiantes"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -147,6 +178,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <Users size={18} />
               <span>Mis Estudiantes</span>
             </NavLink>
+
             <NavLink
               to="/mis-evaluaciones"
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
@@ -206,6 +238,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {(canAccess('materias') || canAccess('carreras')) && (
           <>
             <div className="nav-section-title">Planes de Estudio</div>
+
             {canAccess('carreras') && (
               <NavLink
                 to="/carreras"
@@ -230,10 +263,15 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </>
         )}
 
-        {/* Seguridad y Gestión del Sistema (Admin) */}
-        {(canAccess('usuarios') || canAccess('roles') || canAccess('auditoria')) && (
+        {/* Seguridad y Gestión del Sistema */}
+        {(canAccess('usuarios') ||
+          canAccess('roles') ||
+          canAccess('auditoria')) && (
           <>
-            <div className="nav-section-title">Administración del Sistema</div>
+            <div className="nav-section-title">
+              Administración del Sistema
+            </div>
+
             {canAccess('usuarios') && (
               <NavLink
                 to="/usuarios"
@@ -272,7 +310,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Pie del Menú Lateral */}
       <div className="sidebar-footer">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div style={{ overflow: 'hidden' }}>
             <div
               style={{
@@ -285,15 +329,27 @@ export const Sidebar = ({ isOpen, onClose }) => {
             >
               {user?.nombre} {user?.apellido}
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', textTransform: 'capitalize' }}>
+
+            <div
+              style={{
+                fontSize: '0.72rem',
+                color: 'rgba(255,255,255,0.6)',
+                textTransform: 'capitalize',
+              }}
+            >
               Rol: {user?.nombre_rol}
             </div>
           </div>
+
           <button
             onClick={logout}
             title="Cerrar Sesión Institucional"
             className="btn btn-outline btn-sm"
-            style={{ color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.3)', padding: '4px 8px' }}
+            style={{
+              color: '#f87171',
+              borderColor: 'rgba(248, 113, 113, 0.3)',
+              padding: '4px 8px',
+            }}
           >
             <LogOut size={15} />
           </button>

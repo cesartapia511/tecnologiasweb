@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, RoleGuard } from './RoleGuard';
+import { useAuth } from '../context/AuthContext';
 import { MainLayout } from '../components/layout/MainLayout';
 
 import { LoginPage } from '../pages/auth/LoginPage';
@@ -15,7 +16,10 @@ import { EvaluacionesPage } from '../pages/evaluaciones/EvaluacionesPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
 import { EstudiantesPage } from '../pages/estudiantes/EstudiantesPage';
 import { RolesPage } from '../pages/roles/RolesPage';
+
 import { MiPerfilPage } from '../pages/portal-estudiante/MiPerfilPage';
+import { PerfilTutor } from '../pages/tutores/PerfilTutor';
+
 import { MisMateriasPage } from '../pages/portal-estudiante/MisMateriasPage';
 import { TutorMateriaPage } from '../pages/portal-estudiante/TutorMateriaPage';
 import { MiCalendarioPage } from '../pages/portal-estudiante/MiCalendarioPage';
@@ -23,9 +27,12 @@ import { MisEvaluacionesPage } from '../pages/portal-estudiante/MisEvaluacionesP
 import { MisEstudiantesTutorPage } from '../pages/tutores/MisEstudiantesTutorPage';
 
 export const AppRouter = () => {
+  const { role } = useAuth();
+
   return (
     <BrowserRouter>
       <Routes>
+
         {/* Ruta pública */}
         <Route path="/login" element={<LoginPage />} />
 
@@ -38,22 +45,44 @@ export const AppRouter = () => {
           }
         >
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
           <Route path="/dashboard" element={<DashboardPage />} />
-          
-          {/* Perfil del Usuario */}
-          <Route path="/mi-perfil" element={<MiPerfilPage />} />
-          
-          {/* Módulo Estudiante / Tutor Híbrido */}
+
+          {/* Perfil según el rol */}
+          <Route
+            path="/mi-perfil"
+            element={
+              role === 'tutor'
+                ? <PerfilTutor />
+                : <MiPerfilPage />
+            }
+          />
+
+          {/* Módulo Estudiante / Tutor */}
           <Route path="/mis-materias" element={<MisMateriasPage />} />
           <Route path="/mis-estudiantes" element={<MisEstudiantesTutorPage />} />
-          
+
           {/* Módulo Estudiante */}
-          <Route path="/materias/:id/tutores" element={<TutorMateriaPage />} />
-          <Route path="/mi-calendario" element={<MiCalendarioPage />} />
-          <Route path="/mis-evaluaciones" element={<MisEvaluacionesPage />} />
+          <Route
+            path="/materias/:id/tutores"
+            element={<TutorMateriaPage />}
+          />
+
+          <Route
+            path="/mi-calendario"
+            element={<MiCalendarioPage />}
+          />
+
+          <Route
+            path="/mis-evaluaciones"
+            element={<MisEvaluacionesPage />}
+          />
 
           {/* Tutorías */}
-          <Route path="/tutorias" element={<TutoriasPage />} />
+          <Route
+            path="/tutorias"
+            element={<TutoriasPage />}
+          />
 
           {/* Disponibilidad docente */}
           <Route
@@ -66,7 +95,11 @@ export const AppRouter = () => {
           />
 
           {/* Docentes y Estudiantes */}
-          <Route path="/tutores" element={<TutoresPage />} />
+          <Route
+            path="/tutores"
+            element={<TutoresPage />}
+          />
+
           <Route
             path="/estudiantes"
             element={
@@ -95,6 +128,7 @@ export const AppRouter = () => {
               </RoleGuard>
             }
           />
+
           <Route
             path="/materias"
             element={
@@ -113,6 +147,7 @@ export const AppRouter = () => {
               </RoleGuard>
             }
           />
+
           <Route
             path="/roles"
             element={
@@ -121,6 +156,7 @@ export const AppRouter = () => {
               </RoleGuard>
             }
           />
+
           <Route
             path="/auditoria"
             element={
@@ -132,9 +168,12 @@ export const AppRouter = () => {
         </Route>
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to="/dashboard" replace />}
+        />
+
       </Routes>
     </BrowserRouter>
   );
 };
-

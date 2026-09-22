@@ -15,7 +15,11 @@ export const Header = ({ onToggleSidebar }) => {
 
   // Profile Edit State
   const [telefono, setTelefono] = useState(user?.telefono || '');
-  const [clave, setClave] = useState('');
+  const [claveActual, setClaveActual] = useState('');
+  const [claveNueva, setClaveNueva] = useState('');
+  const [confirmarClave, setConfirmarClave] = useState('');
+  const [fotoFile, setFotoFile] = useState(null);
+  const [fotoPreview, setFotoPreview] = useState(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const { showSuccess, showError } = useToast();
 
@@ -31,8 +35,29 @@ export const Header = ({ onToggleSidebar }) => {
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
+    
+    if (claveNueva && claveNueva !== confirmarClave) {
+      showError('Las contraseñas no coinciden');
+      return;
+    }
+    if (claveNueva && !claveActual) {
+      showError('Debes ingresar tu contraseña actual para realizar el cambio');
+      return;
+    }
+
     setSavingProfile(true);
     try {
+      let fotoUrl = user.foto_perfil;
+      
+      if (fotoFile) {
+        const uploadRes = await api.post('/usuarios/foto.php', (() => {
+          const fd = new FormData();
+          fd.append('foto', fotoFile);
+          return fd;
+        })(), { headers: { 'Content-Type': 'multipart/form-data' } });
+        fotoUrl = uploadRes.data.data.foto_perfil;
+      }
+
       await api.put(`/usuarios/detalle.php?id=${user.id_usuario}`, {
         id_rol: user.id_rol,
         nombre: user.nombre,
@@ -41,15 +66,33 @@ export const Header = ({ onToggleSidebar }) => {
         usuario: user.usuario,
         estado: user.estado,
         telefono: telefono,
-        clave: clave || undefined,
+        clave: claveNueva || undefined,
+        contrasena_actual: claveActual || undefined
       });
-      showSuccess('Perfil actualizado correctamente');
+      
+      showSuccess('Perfil actualizado correctamente. Los cambios en la foto pueden requerir reiniciar sesión para reflejarse globalmente.');
       setProfileModalOpen(false);
-      setClave('');
+      setClaveActual('');
+      setClaveNueva('');
+      setConfirmarClave('');
+      setFotoFile(null);
+      setFotoPreview(null);
     } catch (err) {
-      showError(err.message);
+      showError(err.response?.data?.message || err.message || 'Error al actualizar el perfil');
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        showError('La fotografía no puede superar los 2MB');
+        return;
+      }
+      setFotoFile(file);
+      setFotoPreview(URL.createObjectURL(file));
     }
   };
 
@@ -191,8 +234,13 @@ export const Header = ({ onToggleSidebar }) => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             style={{ cursor: 'pointer' }}
           >
-            <div className="user-avatar">
-              {user?.nombre?.[0] || 'U'}
+            <div className="user-avatar" style={{ 
+              backgroundImage: user?.foto_perfil ? `url(http://localhost:8000/uploads/perfiles/${user.foto_perfil})` : 'none', 
+              backgroundSize: 'cover', 
+              backgroundPosition: 'center',
+              color: user?.foto_perfil ? 'transparent' : 'white'
+            }}>
+              {!user?.foto_perfil && (user?.nombre?.[0] || 'U')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>
@@ -270,20 +318,31 @@ export const Header = ({ onToggleSidebar }) => {
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
             <div
               style={{
-                width: '64px',
-                height: '64px',
+                width: '80px',
+                height: '80px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--upds-portal-blue) 0%, var(--upds-red) 100%)',
-                color: 'white',
+                background: fotoPreview || (user?.foto_perfil ? `url(http://localhost:8000/uploads/perfiles/${user.foto_perfil})` : 'linear-gradient(135deg, var(--upds-portal-blue) 0%, var(--upds-red) 100%)'),
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                color: (fotoPreview || user?.foto_perfil) ? 'transparent' : 'white',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.6rem',
+                fontSize: '2rem',
                 fontWeight: 800,
                 marginBottom: '0.5rem',
+                position: 'relative',
+                overflow: 'hidden'
               }}
             >
-              {user?.nombre?.[0]}
+              {!(fotoPreview || user?.foto_perfil) && user?.nombre?.[0]}
+              <label style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', color: 'white',
+                fontSize: '0.65rem', padding: '2px 0', cursor: 'pointer', textAlign: 'center'
+              }}>
+                Editar
+                <input type="file" accept="image/jpeg, image/png, image/webp" style={{ display: 'none' }} onChange={handleFotoChange} />
+              </label>
             </div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '0.1rem' }}>
               {user?.nombre} {user?.apellido}
@@ -314,15 +373,40 @@ export const Header = ({ onToggleSidebar }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Actualizar Contraseña (Opcional)</label>
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Dejar en blanco para mantener la contraseña actual"
-              value={clave}
-              onChange={(e) => setClave(e.target.value)}
-            />
+          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <h4 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-color)' }}>Seguridad</h4>
+            <div className="form-group">
+              <label className="form-label">Contraseña Actual</label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Requerida si deseas cambiar la contraseña"
+                value={claveActual}
+                onChange={(e) => setClaveActual(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Nueva Contraseña</label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Mínimo 6 caracteres"
+                value={claveNueva}
+                onChange={(e) => setClaveNueva(e.target.value)}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Confirmar Nueva Contraseña</label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Repite la nueva contraseña"
+                value={confirmarClave}
+                onChange={(e) => setConfirmarClave(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="modal-footer" style={{ margin: '1.5rem -1.5rem -1.5rem -1.5rem' }}>

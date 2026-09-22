@@ -6,6 +6,13 @@ export const usuariosService = {
   create: async (data) => await api.post('/usuarios/index.php', data),
   update: async (id, data) => await api.put(`/usuarios/detalle.php?id=${id}`, data),
   delete: async (id) => await api.delete(`/usuarios/detalle.php?id=${id}`),
+  uploadFoto: async (file) => {
+    const formData = new FormData();
+    formData.append('foto', file);
+    return await api.post('/usuarios/foto.php', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
 };
 
 export const carrerasService = {
@@ -31,9 +38,7 @@ export const tutoresService = {
 
 export const estudiantesService = {
   getAll: async () => (await api.get('/estudiantes/index.php')).data,
-  update: async (data) => await api.put('/estudiantes/index.php', data),
   getPerfil: async () => (await api.get('/estudiantes/perfil.php')).data,
-  updatePerfil: async (data) => await api.put('/estudiantes/perfil.php', data),
 };
 
 export const disponibilidadService = {

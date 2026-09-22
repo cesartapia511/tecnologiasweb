@@ -49,6 +49,7 @@ if ($method === 'GET') {
     $telefono = trim($data['telefono'] ?? ($usuarioExistente['telefono'] ?? ''));
     $estado   = ($tienePermisoEditar && isset($data['estado'])) ? $data['estado'] : $usuarioExistente['estado'];
     $clave    = trim($data['clave'] ?? '');
+    $contrasena_actual = trim($data['contrasena_actual'] ?? '');
 
     $errores = [];
 
@@ -68,8 +69,20 @@ if ($method === 'GET') {
         $errores['usuario'] = 'El nombre de usuario debe tener entre 3 y 50 caracteres (sin caracteres especiales).';
     }
 
-    if (!empty($clave) && mb_strlen($clave) < 6) {
-        $errores['clave'] = 'La nueva contraseña debe tener al menos 6 caracteres.';
+    // Si se está intentando cambiar la contraseña
+    if (!empty($clave)) {
+        if (mb_strlen($clave) < 6) {
+            $errores['clave'] = 'La nueva contraseña debe tener al menos 6 caracteres.';
+        }
+        
+        // Si no es admin editando a otro, exigimos la contraseña actual
+        if ($esMismoUsuario) {
+            if (empty($contrasena_actual)) {
+                $errores['contrasena_actual'] = 'Debes ingresar tu contraseña actual para confirmar el cambio.';
+            } elseif (!password_verify($contrasena_actual, $usuarioExistente['contrasena_hash'])) {
+                $errores['contrasena_actual'] = 'La contraseña actual ingresada es incorrecta.';
+            }
+        }
     }
 
     if (!empty($telefono) && !preg_match('/^[0-9+\s-]{7,20}$/', $telefono)) {
@@ -111,7 +124,7 @@ if ($method === 'GET') {
             ':id'       => $id,
         ]);
 
-        // Si se envió una nueva contraseña
+        // Si se envió una nueva contraseña y pasó las validaciones
         if (!empty($clave)) {
             $hash = password_hash($clave, PASSWORD_DEFAULT);
             $stmtP = $pdo->prepare("UPDATE usuarios SET contrasena_hash = ? WHERE id_usuario = ?");
@@ -125,7 +138,8 @@ if ($method === 'GET') {
             'usuario'    => $usuario,
             'correo'     => $correo,
             'telefono'   => $telefono,
-            'estado'     => $estado
+            'estado'     => $estado,
+            'foto_perfil'=> $usuarioExistente['foto_perfil'] ?? null
         ], 'Usuario actualizado correctamente');
     } catch (PDOException $e) {
         jsonError('Error al actualizar usuario', 500, 'Error en el servidor: ' . $e->getMessage());
