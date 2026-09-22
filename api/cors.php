@@ -21,48 +21,12 @@ function getJsonInput() {
     return $_POST;
 }
 
-function cleanMojibake($data) {
-    if (is_array($data)) {
-        return array_map('cleanMojibake', $data);
-    }
-    if (is_object($data)) {
-        foreach ($data as $k => $v) {
-            $data->$k = cleanMojibake($v);
-        }
-        return $data;
-    }
-    if (is_string($data)) {
-        $search = [
-            'IngenierÃa', 'TecnologÃa', 'MarÃa', 'TutorÃas', 'TutorÃa',
-            'PsicologÃa', 'ContadurÃa', 'PÃºblica', 'PÃblica',
-            'AdministraciÃ³n', 'AdministraciÃn', 'ComunicaciÃ³n', 'ComunicaciÃn',
-            'ProgramaciÃ³n', 'ProgramaciÃn', 'GestiÃ³n', 'GestiÃn',
-            'InvestigaciÃ³n', 'InvestigaciÃn', 'OperaciÃ³nes', 'OperaciÃnes', 'OperaciÃ³n', 'OperaciÃn',
-            'Ã¡', 'Ã©', 'Ã­', 'Ã³', 'Ãº', 'Ã±',
-            'Ã ', 'Ã‰', 'Ã ', 'Ã“', 'Ãš', 'Ã‘',
-            'Ã¼', 'Ãœ', 'Ã'
-        ];
-        $replace = [
-            'Ingeniería', 'Tecnología', 'María', 'Tutorías', 'Tutoría',
-            'Psicología', 'Contaduría', 'Pública', 'Pública',
-            'Administración', 'Administración', 'Comunicación', 'Comunicación',
-            'Programación', 'Programación', 'Gestión', 'Gestión',
-            'Investigación', 'Investigación', 'Operaciones', 'Operaciones', 'Operación', 'Operación',
-            'á', 'é', 'í', 'ó', 'ú', 'ñ',
-            'Á', 'É', 'Í', 'Ó', 'Ú', 'Ñ',
-            'ü', 'Ü', 'í'
-        ];
-        return str_replace($search, $replace, $data);
-    }
-    return $data;
-}
-
 function jsonSuccess($data = null, $message = 'Operación realizada correctamente', $code = 200) {
     http_response_code($code);
     echo json_encode([
         'success' => true,
-        'message' => cleanMojibake($message),
-        'data'    => cleanMojibake($data)
+        'message' => $message,
+        'data'    => $data
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -71,13 +35,13 @@ function jsonError($message = 'Error en la petición', $code = 400, $motivo = nu
     http_response_code($code);
     $response = [
         'success' => false,
-        'message' => cleanMojibake($message),
+        'message' => $message,
     ];
     if ($motivo !== null && $motivo !== '') {
-        $response['motivo'] = cleanMojibake($motivo);
+        $response['motivo'] = $motivo;
     }
     if (!empty($errors)) {
-        $response['errors'] = cleanMojibake($errors);
+        $response['errors'] = $errors;
     }
     echo json_encode($response, JSON_UNESCAPED_UNICODE);
     exit;

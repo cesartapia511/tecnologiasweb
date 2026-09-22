@@ -19,7 +19,8 @@ class CarreraModel
     {
         $sql = "SELECT c.id_carrera, c.nombre_carrera,
                        (SELECT COUNT(*) FROM materias m WHERE m.id_carrera = c.id_carrera) AS total_materias,
-                       (SELECT COUNT(*) FROM estudiantes e WHERE e.id_carrera = c.id_carrera) AS total_estudiantes
+                       (SELECT COUNT(*) FROM estudiantes e WHERE e.id_carrera = c.id_carrera) AS total_estudiantes,
+                       (SELECT COUNT(tu.id_tutoria) FROM tutorias tu INNER JOIN materias ma ON tu.id_materia = ma.id_materia WHERE ma.id_carrera = c.id_carrera) AS total_tutorias
                 FROM carreras c
                 ORDER BY c.nombre_carrera ASC";
         return $this->pdo->query($sql)->fetchAll();

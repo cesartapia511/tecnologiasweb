@@ -13,11 +13,39 @@ import {
   Star,
   PlusCircle,
   CalendarDays,
+  Activity,
+  BarChart2,
+  GraduationCap
 } from 'lucide-react';
+
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend
+} from 'recharts';
+
+const CHART_COLORS = ['#0033a0', '#ef4444', '#ffb81c', '#22c55e', '#6366f1', '#f97316'];
+const STATUS_COLORS = {
+  'Realizada': '#22c55e',
+  'Confirmada': '#0033a0',
+  'Pendiente': '#ffb81c',
+  'Cancelada': '#ef4444'
+};
 
 export const DashboardPage = () => {
   const { user, isAdmin, isDocente, isEstudiante } = useAuth();
   const [stats, setStats] = useState(null);
+  const [advancedStats, setAdvancedStats] = useState(null);
   const [tutoriasTutor, setTutoriasTutor] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,6 +62,11 @@ export const DashboardPage = () => {
       const data = await dashboardService.getStats(params);
       setStats(data);
 
+      if (isAdmin) {
+        const advData = await dashboardService.getAdvancedStats();
+        setAdvancedStats(advData);
+      }
+
       if (isDocente) {
         const allTutorias = await tutoriasService.getAll();
         setTutoriasTutor(allTutorias);
@@ -43,7 +76,7 @@ export const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [isDocente, isEstudiante, user]);
+  }, [isAdmin, isDocente, isEstudiante, user]);
 
   useEffect(() => {
     loadStats();
@@ -66,20 +99,20 @@ export const DashboardPage = () => {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.15)', padding: '4px 12px', borderRadius: '9999px', fontSize: '0.78rem', marginBottom: '0.75rem' }}>
             <span style={{ color: 'var(--upds-gold)', fontWeight: 700 }}>● UPDS Sede Tarija</span>
             <span>&bull;</span>
-            <span>Gestión Académica de Tutorías</span>
+            <span>{isAdmin ? 'Centro de Control Institucional' : 'Gestión Académica de Tutorías'}</span>
           </div>
           <h1 style={{ color: '#fff', fontSize: '1.85rem', marginBottom: '0.35rem' }}>
             Bienvenido(a), {user?.nombre} {user?.apellido}
           </h1>
           <p style={{ color: 'rgba(255, 255, 255, 0.88)', maxWidth: '680px', fontSize: '0.95rem' }}>
-            {isAdmin && 'Supervisión integral de asignaturas, cuerpo docente tutor y sesiones de reforzamiento académico.'}
+            {isAdmin && 'Supervisión integral de asignaturas, cuerpo docente tutor y sesiones de reforzamiento académico. Datos actualizados desde la base de datos.'}
             {isDocente && 'Panel de Acompañamiento Pedagógico. Gestiona tus horarios de atención y el avance de los estudiantes tutorados.'}
             {isEstudiante && `Estudiante de ${user?.nombre_carrera || 'Ingeniería de Sistemas'}. Consulta tutores disponibles y agenda sesiones de reforzamiento.`}
           </p>
         </div>
       </div>
 
-      {/* Grid de Tarjetas / Estadísticas */}
+      {/* Grid de Tarjetas / Estadísticas Principales */}
       <div className="stats-grid" style={{ 
         display: 'grid', 
         gridTemplateColumns: isDocente ? 'repeat(auto-fit, minmax(220px, 1fr))' : 'repeat(auto-fit, minmax(250px, 1fr))', 
@@ -91,10 +124,20 @@ export const DashboardPage = () => {
             <div className="stat-card primary">
               <div>
                 <div className="stat-value">{stats?.total_usuarios || 0}</div>
-                <div className="stat-label">Usuarios Registrados</div>
+                <div className="stat-label">Usuarios Totales</div>
               </div>
               <div className="stat-icon-wrapper primary">
                 <Users size={24} />
+              </div>
+            </div>
+
+            <div className="stat-card" style={{ borderLeft: '4px solid var(--upds-blue-dark)', backgroundColor: '#fff', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div className="stat-value" style={{ fontSize: '1.8rem', fontWeight: '700' }}>{stats?.total_estudiantes || 0}</div>
+                <div className="stat-label" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Estudiantes Registrados</div>
+              </div>
+              <div className="stat-icon-wrapper" style={{ background: 'rgba(0,51,160,0.1)', color: 'var(--upds-blue-dark)', padding: '0.75rem', borderRadius: '0.5rem' }}>
+                <GraduationCap size={24} />
               </div>
             </div>
 
@@ -231,6 +274,107 @@ export const DashboardPage = () => {
           </>
         )}
       </div>
+
+      {/* ========================================================= */}
+      {/* SECCIÓN DE GRÁFICOS (EXCLUSIVA ADMINISTRADOR)             */}
+      {/* ========================================================= */}
+      {isAdmin && advancedStats && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+          
+          {/* Gráfico 1: Evolución Mensual de Tutorías */}
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Activity size={20} color="var(--upds-blue)" />
+              Evolución Mensual (Últimos 6 meses)
+            </h3>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={advancedStats.tutorias_por_mes} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                    cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '3 3' }}
+                  />
+                  <Line type="monotone" dataKey="total" name="Total Tutorías" stroke="var(--upds-blue)" strokeWidth={3} dot={{r: 4, fill: 'var(--upds-blue)', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Gráfico 2: Distribución por Estado */}
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <PieChart size={20} color="var(--upds-gold)" />
+              Distribución por Estado
+            </h3>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={advancedStats.tutorias_por_estado}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {advancedStats.tutorias_por_estado.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Gráfico 3: Tutorías por Carrera */}
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BarChart2 size={20} color="var(--upds-red)" />
+              Tutorías por Carrera
+            </h3>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={advancedStats.tutorias_por_carrera} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <YAxis type="category" dataKey="name" width={120} axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 12, fontWeight: 500}} />
+                  <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+                  <Bar dataKey="total" name="Tutorías" fill="var(--upds-red)" radius={[0, 4, 4, 0]} barSize={24}>
+                    {advancedStats.tutorias_por_carrera.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Gráfico 4: Materias más solicitadas (Top 5) */}
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookOpen size={20} color="var(--upds-green)" />
+              Top 5 Materias Solicitadas
+            </h3>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={advancedStats.tutorias_por_materia} margin={{ top: 5, right: 30, left: 20, bottom: 25 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}} angle={-15} textAnchor="end" dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+                  <Bar dataKey="total" name="Tutorías" fill="var(--upds-blue)" radius={[4, 4, 0, 0]} barSize={36} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Gráficos y Estadísticas Avanzadas para Tutor */}
       {isDocente && stats?.tutorias && (
@@ -415,10 +559,10 @@ export const DashboardPage = () => {
         <div className="card-header-clean">
           <div>
             <h3 style={{ fontSize: '1.15rem' }}>
-              {isEstudiante ? 'Mis Solicitudes de Tutoría' : 'Últimas Tutorías Registradas'}
+              {isAdmin ? 'Actividad Reciente (Últimas Tutorías)' : (isEstudiante ? 'Mis Solicitudes de Tutoría' : 'Últimas Tutorías Registradas')}
             </h3>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Actualizado en tiempo real desde la base de datos
+              Datos actualizados desde la base de datos
             </span>
           </div>
           <Link to="/tutorias" className="btn btn-outline btn-sm">
@@ -436,7 +580,8 @@ export const DashboardPage = () => {
               <thead>
                 <tr>
                   <th>Materia</th>
-                  <th>{isDocente ? 'Estudiante' : 'Docente Tutor'}</th>
+                  <th>{isAdmin ? 'Tutor' : (isDocente ? 'Estudiante' : 'Docente Tutor')}</th>
+                  {isAdmin && <th>Estudiante</th>}
                   <th>Fecha y Hora</th>
                   <th>Modalidad</th>
                   <th>Estado</th>
@@ -449,10 +594,15 @@ export const DashboardPage = () => {
                       {tut.nombre_materia}
                     </td>
                     <td>
-                      {isDocente
-                        ? `${tut.estudiante_nombre} ${tut.estudiante_apellido}`
-                        : `${tut.tutor_nombre} ${tut.tutor_apellido}`}
+                      {isAdmin 
+                        ? `${tut.tutor_nombre} ${tut.tutor_apellido}` 
+                        : (isDocente
+                          ? `${tut.estudiante_nombre} ${tut.estudiante_apellido}`
+                          : `${tut.tutor_nombre} ${tut.tutor_apellido}`)}
                     </td>
+                    {isAdmin && (
+                      <td>{`${tut.estudiante_nombre} ${tut.estudiante_apellido}`}</td>
+                    )}
                     <td>
                       {tut.fecha} a las {tut.hora_inicio.slice(0, 5)}
                     </td>
@@ -476,4 +626,3 @@ export const DashboardPage = () => {
     </div>
   );
 };
-

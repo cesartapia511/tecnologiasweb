@@ -8,6 +8,9 @@ export const EvaluacionesPage = () => {
   const { user, isDocente } = useAuth();
   const [evaluaciones, setEvaluaciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCalificacion, setSelectedCalificacion] = useState('');
+  const [selectedFecha, setSelectedFecha] = useState('');
   const { showError } = useToast();
 
   const loadData = useCallback(async () => {
@@ -26,6 +29,20 @@ export const EvaluacionesPage = () => {
     loadData();
   }, [loadData]);
 
+  const filteredEvaluaciones = evaluaciones.filter(ev => {
+    if (selectedCalificacion && String(ev.calificacion) !== String(selectedCalificacion)) return false;
+    if (selectedFecha && ev.fecha_evaluacion?.slice(0, 10) !== selectedFecha) return false;
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchMateria = ev.nombre_materia?.toLowerCase().includes(term);
+      const matchEstudiante = (ev.estudiante_nombre + ' ' + ev.estudiante_apellido).toLowerCase().includes(term);
+      const matchTutor = (ev.tutor_nombre + ' ' + ev.tutor_apellido).toLowerCase().includes(term);
+      return matchMateria || matchEstudiante || matchTutor;
+    }
+    return true;
+  });
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -41,13 +58,49 @@ export const EvaluacionesPage = () => {
         </button>
       </div>
 
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1', minWidth: '220px' }}>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar por materia, tutor o estudiante..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div style={{ minWidth: '150px' }}>
+            <input
+              type="date"
+              className="form-control"
+              value={selectedFecha}
+              onChange={(e) => setSelectedFecha(e.target.value)}
+            />
+          </div>
+          <div style={{ minWidth: '150px' }}>
+            <select
+              className="form-control"
+              value={selectedCalificacion}
+              onChange={(e) => setSelectedCalificacion(e.target.value)}
+            >
+              <option value="">Cualquier Nota</option>
+              <option value="5">5 Estrellas</option>
+              <option value="4">4 Estrellas</option>
+              <option value="3">3 Estrellas</option>
+              <option value="2">2 Estrellas</option>
+              <option value="1">1 Estrella</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
           Cargando evaluaciones...
         </div>
-      ) : evaluaciones.length > 0 ? (
+      ) : filteredEvaluaciones.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
-          {evaluaciones.map((ev) => (
+          {filteredEvaluaciones.map((ev) => (
             <div key={ev.id_evaluacion} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>

@@ -61,6 +61,9 @@ export const dashboardService = {
     const query = new URLSearchParams(params).toString();
     return (await api.get(`/dashboard/stats.php${query ? `?${query}` : ''}`)).data;
   },
+  getAdvancedStats: async () => {
+    return (await api.get('/dashboard/advanced_stats.php')).data;
+  },
 };
 
 export const rolesService = {

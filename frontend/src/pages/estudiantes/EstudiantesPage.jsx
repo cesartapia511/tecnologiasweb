@@ -12,6 +12,8 @@ export const EstudiantesPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCarrera, setSelectedCarrera] = useState('');
+  const [selectedSemestre, setSelectedSemestre] = useState('');
+  const [selectedEstado, setSelectedEstado] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEstudiante, setEditingEstudiante] = useState(null);
@@ -83,7 +85,9 @@ export const EstudiantesPage = () => {
       est.registro_universitario?.toLowerCase().includes(search.toLowerCase()) ||
       est.correo?.toLowerCase().includes(search.toLowerCase());
     const matchCarrera = selectedCarrera ? String(est.id_carrera) === String(selectedCarrera) : true;
-    return matchSearch && matchCarrera;
+    const matchSemestre = selectedSemestre ? String(est.semestre) === String(selectedSemestre) : true;
+    const matchEstado = selectedEstado ? est.estado === selectedEstado : true;
+    return matchSearch && matchCarrera && matchSemestre && matchEstado;
   });
 
   return (
@@ -126,6 +130,33 @@ export const EstudiantesPage = () => {
                   {c.nombre_carrera}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div style={{ minWidth: '150px' }}>
+            <select
+              className="form-control"
+              value={selectedSemestre}
+              onChange={(e) => setSelectedSemestre(e.target.value)}
+              style={{ padding: '0.45rem 0.75rem', fontSize: '0.88rem' }}
+            >
+              <option value="">Todos los semestres</option>
+              {[1,2,3,4,5,6,7,8,9,10].map(s => (
+                <option key={s} value={s}>{s}° Semestre</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ minWidth: '120px' }}>
+            <select
+              className="form-control"
+              value={selectedEstado}
+              onChange={(e) => setSelectedEstado(e.target.value)}
+              style={{ padding: '0.45rem 0.75rem', fontSize: '0.88rem' }}
+            >
+              <option value="">Cualquier estado</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
             </select>
           </div>
 

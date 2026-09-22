@@ -12,6 +12,7 @@ export const UsuariosPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedEstado, setSelectedEstado] = useState('');
 
   // Modales
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,7 +127,8 @@ export const UsuariosPage = () => {
       u.correo?.toLowerCase().includes(search.toLowerCase()) ||
       u.usuario?.toLowerCase().includes(search.toLowerCase());
     const matchRole = selectedRole ? u.nombre_rol === selectedRole : true;
-    return matchSearch && matchRole;
+    const matchEstado = selectedEstado ? u.estado === selectedEstado : true;
+    return matchSearch && matchRole && matchEstado;
   });
 
   return (
@@ -172,6 +174,20 @@ export const UsuariosPage = () => {
               <option value="administrador">Administrador</option>
               <option value="tutor">Docente Tutor</option>
               <option value="estudiante">Estudiante</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>Estado:</span>
+            <select
+              className="form-control"
+              style={{ width: '130px', padding: '0.45rem 0.75rem' }}
+              value={selectedEstado}
+              onChange={(e) => setSelectedEstado(e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
             </select>
           </div>
 

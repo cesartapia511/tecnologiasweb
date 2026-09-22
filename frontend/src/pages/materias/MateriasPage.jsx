@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../../components/common/Modal';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { Plus, Search, Edit2, Trash2, BookOpen, RefreshCw } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, BookOpen, RefreshCw, CalendarDays } from 'lucide-react';
 
 export const MateriasPage = () => {
   const [materias, setMaterias] = useState([]);
@@ -174,6 +174,7 @@ export const MateriasPage = () => {
                   <th>Nombre de la Asignatura</th>
                   <th>Carrera Vinculada</th>
                   <th>Tutores Asignados</th>
+                  <th>Tutorías Registradas</th>
                   {isAdmin && <th style={{ textAlign: 'right' }}>Acciones</th>}
                 </tr>
               </thead>
@@ -190,6 +191,12 @@ export const MateriasPage = () => {
                     <td>{m.nombre_carrera || 'Tronco Común'}</td>
                     <td>
                       <span className="badge badge-tutor">{m.total_tutores || 0} docentes</span>
+                    </td>
+                    <td>
+                      <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}>
+                        <CalendarDays size={12} style={{ marginRight: '4px' }} />
+                        {m.total_tutorias || 0} sesiones
+                      </span>
                     </td>
                     {isAdmin && (
                       <td style={{ textAlign: 'right' }}>

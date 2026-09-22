@@ -38,6 +38,10 @@ class TutorModel
             $cal = $stmtCal->fetch();
             $tutor['calificacion_promedio'] = $cal['promedio'] ? round((float)$cal['promedio'], 1) : 5.0;
             $tutor['total_evaluaciones'] = $cal['total_evaluaciones'] ?? 0;
+
+            $stmtTut = $this->pdo->prepare("SELECT COUNT(*) FROM tutorias WHERE id_tutor = ? AND estado = 'realizada'");
+            $stmtTut->execute([$tutor['id_tutor']]);
+            $tutor['tutorias_realizadas'] = (int) $stmtTut->fetchColumn();
         }
 
         return $tutores;

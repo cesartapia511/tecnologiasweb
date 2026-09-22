@@ -24,7 +24,8 @@ class MateriaModel
     {
         $sql = "SELECT m.id_materia, m.nombre_materia, m.id_carrera,
                        c.nombre_carrera,
-                       (SELECT COUNT(*) FROM tutor_materia tm WHERE tm.id_materia = m.id_materia) AS total_tutores
+                       (SELECT COUNT(*) FROM tutor_materia tm WHERE tm.id_materia = m.id_materia) AS total_tutores,
+                       (SELECT COUNT(*) FROM tutorias tu WHERE tu.id_materia = m.id_materia) AS total_tutorias
                 FROM materias m
                 LEFT JOIN carreras c ON m.id_carrera = c.id_carrera
                 ORDER BY m.nombre_materia ASC";

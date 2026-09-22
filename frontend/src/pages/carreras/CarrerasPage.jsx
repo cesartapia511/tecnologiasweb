@@ -3,7 +3,7 @@ import { carrerasService } from '../../services/dataServices';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../../components/common/Modal';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
-import { Plus, Search, Edit2, Trash2, GraduationCap, RefreshCw } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, GraduationCap, RefreshCw, CalendarDays } from 'lucide-react';
 
 export const CarrerasPage = () => {
   const [carreras, setCarreras] = useState([]);
@@ -134,6 +134,7 @@ export const CarrerasPage = () => {
                   <th>Nombre del Programa / Carrera</th>
                   <th>Total Materias</th>
                   <th>Estudiantes Matriculados</th>
+                  <th>Tutorías Registradas</th>
                   <th style={{ textAlign: 'right' }}>Acciones</th>
                 </tr>
               </thead>
@@ -152,6 +153,12 @@ export const CarrerasPage = () => {
                     </td>
                     <td>
                       <span className="badge badge-estudiante">{c.total_estudiantes || 0} alumnos</span>
+                    </td>
+                    <td>
+                      <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}>
+                        <CalendarDays size={12} style={{ marginRight: '4px' }} />
+                        {c.total_tutorias || 0} sesiones
+                      </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '6px' }}>

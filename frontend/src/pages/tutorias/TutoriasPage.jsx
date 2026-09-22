@@ -32,6 +32,8 @@ export const TutoriasPage = () => {
   const [filtroEstado, setFiltroEstado] = useState('todas');
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFecha, setSelectedFecha] = useState('');
+  const [selectedMateria, setSelectedMateria] = useState('');
   
   // Modales
   const [isSolicitudOpen, setIsSolicitudOpen] = useState(false);
@@ -207,6 +209,8 @@ export const TutoriasPage = () => {
   const filteredTutorias = tutorias.filter(t => {
     // Filtro por Estado
     if (filtroEstado !== 'todas' && t.estado !== filtroEstado) return false;
+    if (selectedFecha && t.fecha !== selectedFecha) return false;
+    if (selectedMateria && String(t.id_materia) !== String(selectedMateria)) return false;
     
     // Filtro por Texto de Búsqueda
     if (searchTerm) {
@@ -250,29 +254,54 @@ export const TutoriasPage = () => {
       </div>
 
       {/* Pestañas de Filtrado por Estado y Búsqueda */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
-          {['todas', 'pendiente', 'confirmada', 'realizada', 'cancelada'].map(estado => (
-            <button
-              key={estado}
-              onClick={() => setFiltroEstado(estado)}
-              className={`btn ${filtroEstado === estado ? 'btn-primary' : 'btn-outline'}`}
-              style={{ textTransform: 'capitalize', borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.9rem' }}
-            >
-              {estado === 'todas' ? 'Todas' : estado === 'confirmada' ? 'Próximas (Confirmadas)' : estado}
-            </button>
-          ))}
+      <div className="card" style={{ marginBottom: '1.25rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.25rem', flex: 1 }}>
+            {['todas', 'pendiente', 'confirmada', 'realizada', 'cancelada'].map(estado => (
+              <button
+                key={estado}
+                onClick={() => setFiltroEstado(estado)}
+                className={`btn ${filtroEstado === estado ? 'btn-primary' : 'btn-outline'}`}
+                style={{ textTransform: 'capitalize', borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+              >
+                {estado === 'todas' ? 'Todas' : estado === 'confirmada' ? 'Próximas (Confirmadas)' : estado}
+              </button>
+            ))}
+          </div>
         </div>
-        
-        <div style={{ flex: '1', minWidth: '250px', maxWidth: '350px' }}>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Buscar por materia, estudiante..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ borderRadius: '20px', padding: '0.5rem 1rem' }}
-          />
+
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar por materia, estudiante o tutor..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div style={{ minWidth: '150px' }}>
+            <input
+              type="date"
+              className="form-control"
+              value={selectedFecha}
+              onChange={(e) => setSelectedFecha(e.target.value)}
+            />
+          </div>
+          <div style={{ minWidth: '200px' }}>
+            <select
+              className="form-control"
+              value={selectedMateria}
+              onChange={(e) => setSelectedMateria(e.target.value)}
+            >
+              <option value="">Todas las materias</option>
+              {materias.map((m) => (
+                <option key={m.id_materia} value={m.id_materia}>
+                  {m.nombre_materia}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

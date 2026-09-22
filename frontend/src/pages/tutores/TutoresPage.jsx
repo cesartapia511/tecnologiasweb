@@ -2,13 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { tutoresService, materiasService } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { StatusBadge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
-import { Star, BookOpen, Mail, Edit3, RefreshCw } from 'lucide-react';
+import { Star, BookOpen, Mail, Edit3, RefreshCw, Search, CheckCircle } from 'lucide-react';
 
 export const TutoresPage = () => {
   const [tutores, setTutores] = useState([]);
   const [materias, setMaterias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [selectedMateria, setSelectedMateria] = useState('');
   const [editingTutor, setEditingTutor] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
@@ -83,6 +86,18 @@ export const TutoresPage = () => {
     }
   };
 
+  const filteredTutores = tutores.filter(t => {
+    const term = search.toLowerCase();
+    const matchSearch = (t.nombre + ' ' + t.apellido).toLowerCase().includes(term) ||
+                        (t.especialidad || '').toLowerCase().includes(term);
+    
+    const matchMateria = selectedMateria
+      ? t.materias?.some(m => String(m.id_materia) === String(selectedMateria))
+      : true;
+
+    return matchSearch && matchMateria;
+  });
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -92,10 +107,39 @@ export const TutoresPage = () => {
             Cuerpo docente UPDS Tarija y áreas de especialización académica
           </p>
         </div>
-        <button onClick={loadData} className="btn btn-secondary btn-sm">
-          <RefreshCw size={15} />
-          <span>Actualizar</span>
-        </button>
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="header-search" style={{ width: '300px' }}>
+            <Search size={18} color="var(--text-muted)" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, especialidad..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div style={{ minWidth: '220px' }}>
+            <select
+              className="form-control"
+              value={selectedMateria}
+              onChange={(e) => setSelectedMateria(e.target.value)}
+              style={{ padding: '0.45rem 0.75rem', fontSize: '0.88rem' }}
+            >
+              <option value="">Todas las Materias</option>
+              {materias.map((m) => (
+                <option key={m.id_materia} value={m.id_materia}>
+                  {m.nombre_materia}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button onClick={loadData} className="btn btn-secondary btn-sm" style={{ marginLeft: 'auto' }}>
+            <RefreshCw size={15} />
+            <span>Actualizar</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -104,7 +148,7 @@ export const TutoresPage = () => {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-          {tutores.map((t) => {
+          {filteredTutores.map((t) => {
             const canEditThis = isAdmin || (isDocente && user?.id_tutor === t.id_tutor);
             return (
               <div key={t.id_tutor} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -139,6 +183,16 @@ export const TutoresPage = () => {
                       <span style={{ color: 'var(--text-muted)' }}>({t.total_evaluaciones} opiniones)</span>
                     </div>
                   </div>
+                  <div style={{ alignSelf: 'flex-start' }}>
+                    <StatusBadge status={t.estado || 'activo'} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                  <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}>
+                    <CheckCircle size={12} style={{ marginRight: '4px' }} />
+                    {t.tutorias_realizadas || 0} Tutorías Realizadas
+                  </span>
                 </div>
 
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '1rem', flex: 1 }}>
