@@ -15,6 +15,11 @@ import { EvaluacionesPage } from '../pages/evaluaciones/EvaluacionesPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
 import { EstudiantesPage } from '../pages/estudiantes/EstudiantesPage';
 import { RolesPage } from '../pages/roles/RolesPage';
+import { MiPerfilPage } from '../pages/portal-estudiante/MiPerfilPage';
+import { MisMateriasPage } from '../pages/portal-estudiante/MisMateriasPage';
+import { TutorMateriaPage } from '../pages/portal-estudiante/TutorMateriaPage';
+import { MiCalendarioPage } from '../pages/portal-estudiante/MiCalendarioPage';
+import { MisEvaluacionesPage } from '../pages/portal-estudiante/MisEvaluacionesPage';
 
 export const AppRouter = () => {
   return (
@@ -33,6 +38,15 @@ export const AppRouter = () => {
         >
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          
+          {/* Perfil del Usuario */}
+          <Route path="/mi-perfil" element={<MiPerfilPage />} />
+          
+          {/* Módulo Estudiante */}
+          <Route path="/mis-materias" element={<MisMateriasPage />} />
+          <Route path="/materias/:id/tutores" element={<TutorMateriaPage />} />
+          <Route path="/mi-calendario" element={<MiCalendarioPage />} />
+          <Route path="/mis-evaluaciones" element={<MisEvaluacionesPage />} />
 
           {/* Tutorías */}
           <Route path="/tutorias" element={<TutoriasPage />} />

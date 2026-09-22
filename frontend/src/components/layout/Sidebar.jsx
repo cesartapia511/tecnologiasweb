@@ -12,6 +12,7 @@ import {
   Star,
   ShieldCheck,
   LogOut,
+  User,
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -63,6 +64,15 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <span>Panel de Control</span>
         </NavLink>
 
+        <NavLink
+          to="/mi-perfil"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          onClick={onClose}
+        >
+          <User size={18} />
+          <span>Mi Perfil</span>
+        </NavLink>
+
         {/* Tutorías y Asesoría Académica */}
         <div className="nav-section-title">Acompañamiento Académico</div>
         {canAccess('tutorias') && (
@@ -80,6 +90,35 @@ export const Sidebar = ({ isOpen, onClose }) => {
                 : 'Control de Tutorías'}
             </span>
           </NavLink>
+        )}
+
+        {role === 'estudiante' && (
+          <>
+            <NavLink
+              to="/mi-calendario"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <CalendarClock size={18} />
+              <span>Mi Calendario</span>
+            </NavLink>
+            <NavLink
+              to="/mis-materias"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <BookOpen size={18} />
+              <span>Mis Materias</span>
+            </NavLink>
+            <NavLink
+              to="/mis-evaluaciones"
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <Star size={18} />
+              <span>Mis Evaluaciones</span>
+            </NavLink>
+          </>
         )}
 
         {canAccess('disponibilidad') && (

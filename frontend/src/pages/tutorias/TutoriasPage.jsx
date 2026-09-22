@@ -29,6 +29,7 @@ export const TutoriasPage = () => {
   const [materias, setMaterias] = useState([]);
   const [tutores, setTutores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtroEstado, setFiltroEstado] = useState('todas');
 
   // Modales
   const [isSolicitudOpen, setIsSolicitudOpen] = useState(false);
@@ -230,6 +231,20 @@ export const TutoriasPage = () => {
         </div>
       </div>
 
+      {/* Pestañas de Filtrado por Estado */}
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+        {['todas', 'pendiente', 'confirmada', 'realizada', 'cancelada'].map(estado => (
+          <button
+            key={estado}
+            onClick={() => setFiltroEstado(estado)}
+            className={`btn ${filtroEstado === estado ? 'btn-primary' : 'btn-outline'}`}
+            style={{ textTransform: 'capitalize', borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+          >
+            {estado === 'todas' ? 'Todas' : estado === 'confirmada' ? 'Próximas (Confirmadas)' : estado}
+          </button>
+        ))}
+      </div>
+
       {/* Lista / Cards de Tutorías */}
       <div className="card">
         {loading ? (
@@ -251,7 +266,7 @@ export const TutoriasPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {tutorias.map((t) => (
+                {tutorias.filter(t => filtroEstado === 'todas' ? true : t.estado === filtroEstado).map((t) => (
                   <tr key={t.id_tutoria}>
                     <td style={{ fontWeight: 600, color: 'var(--upds-blue-dark)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -373,6 +388,13 @@ export const TutoriasPage = () => {
                     </td>
                   </tr>
                 ))}
+                {tutorias.filter(t => filtroEstado === 'todas' ? true : t.estado === filtroEstado).length === 0 && (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                      No hay tutorías que coincidan con el estado seleccionado.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

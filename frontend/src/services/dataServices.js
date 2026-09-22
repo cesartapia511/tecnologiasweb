@@ -32,6 +32,8 @@ export const tutoresService = {
 export const estudiantesService = {
   getAll: async () => (await api.get('/estudiantes/index.php')).data,
   update: async (data) => await api.put('/estudiantes/index.php', data),
+  getPerfil: async () => (await api.get('/estudiantes/perfil.php')).data,
+  updatePerfil: async (data) => await api.put('/estudiantes/perfil.php', data),
 };
 
 export const disponibilidadService = {
