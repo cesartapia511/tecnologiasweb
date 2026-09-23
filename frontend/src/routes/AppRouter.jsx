@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { MainLayout } from '../components/layout/MainLayout';
 
 import { LoginPage } from '../pages/auth/LoginPage';
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { UsuariosPage } from '../pages/usuarios/UsuariosPage';
 import { CarrerasPage } from '../pages/carreras/CarrerasPage';
@@ -36,6 +37,7 @@ export const AppRouter = () => {
 
         {/* Ruta pública */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
 
         {/* Rutas autenticadas */}
         <Route

@@ -16,6 +16,8 @@ if ($method === 'POST') {
     $stmt->execute([$correo]);
     $usuario = $stmt->fetch();
 
+    $recovery_url = null;
+
     if ($usuario) {
         $token = bin2hex(random_bytes(32));
         $hash = hash('sha256', $token);
@@ -25,11 +27,16 @@ if ($method === 'POST') {
         $stmtToken->execute([$usuario['id_usuario'], $hash, $expira]);
 
         // NOTA: Como no hay servidor SMTP configurado, no enviamos correo. 
-        // En producción, aquí se usaría PHPMailer.
+        // En entorno de desarrollo local, generamos la URL para poder probar.
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $host = "localhost:5173"; // Por defecto Vite usa el puerto 5173
+        
+        $recovery_url = $protocol . $host . "/restablecer-contrasena?token=" . $token;
     }
 
     // Por seguridad, siempre mostramos el mismo mensaje exista o no el correo
-    jsonSuccess(null, 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.');
+    // Incluimos recovery_url en desarrollo para permitir el flujo sin SMTP
+    jsonSuccess(['recovery_url' => $recovery_url], 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.');
 } else {
     jsonError('Método no permitido', 405);
 }
