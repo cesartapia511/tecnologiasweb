@@ -85,3 +85,12 @@ export const reportesService = {
     return (await api.get(`/reportes/index.php${query ? `?${query}` : ''}`)).data;
   }
 };
+
+export const cartasService = {
+  getAll: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return (await api.get(`/cartas_designacion/index.php${query ? `?${query}` : ''}`)).data;
+  },
+  create: async (data) => await api.post('/cartas_designacion/index.php', data),
+  updateStatus: async (data) => await api.put('/cartas_designacion/index.php', data),
+};

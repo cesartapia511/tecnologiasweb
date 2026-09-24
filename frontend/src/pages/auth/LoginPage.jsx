@@ -122,7 +122,15 @@ export const LoginPage = () => {
 
     setLoading(true);
 
-    const res = await register(regData);
+    let submitData = { ...regData };
+    if (submitData.id_rol === 2) {
+      const selectedCarrera = carreras.find(c => c.id_carrera === submitData.id_carrera);
+      if (selectedCarrera) {
+        submitData.especialidad = selectedCarrera.nombre_carrera;
+      }
+    }
+
+    const res = await register(submitData);
 
     setLoading(false);
 
@@ -1199,21 +1207,29 @@ export const LoginPage = () => {
               ) : (
                 <div className="form-group">
                   <label className="form-label">
-                    Especialidad Docente *
+                    Carrera Universitaria *
                   </label>
 
-                  <input
-                    type="text"
+                  <select
                     className="form-control"
-                    placeholder="Ej: Programación, Bases de Datos, Redes..."
-                    value={regData.especialidad}
+                    value={regData.id_carrera}
                     onChange={(e) =>
                       setRegData({
                         ...regData,
-                        especialidad: e.target.value,
+                        id_carrera: Number(e.target.value),
                       })
                     }
-                  />
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {carreras.map((c) => (
+                      <option
+                        key={c.id_carrera}
+                        value={c.id_carrera}
+                      >
+                        {c.nombre_carrera}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
 

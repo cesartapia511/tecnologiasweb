@@ -115,9 +115,9 @@ export const PerfilTutor = () => {
       return;
     }
 
-    if (claveNueva && !claveActual) {
+    if (!claveActual) {
       showError(
-        'Debes ingresar tu contraseña actual para realizar el cambio'
+        'Debes ingresar tu contraseña actual para confirmar los cambios'
       );
       return;
     }
@@ -141,8 +141,7 @@ export const PerfilTutor = () => {
       await tutoresService.update({
         id_tutor: perfil.id_tutor,
         especialidad: perfil.especialidad,
-        biografia: perfil.biografia,
-        materias_ids: perfil.materias_ids
+        biografia: perfil.biografia
       });
 
       await usuariosService.update(user.id_usuario, {
@@ -525,13 +524,11 @@ export const PerfilTutor = () => {
                   type="text"
                   name="especialidad"
                   className="form-control"
-                  style={{ paddingLeft: '35px' }}
+                  style={{ paddingLeft: '35px', backgroundColor: 'var(--bg-card)' }}
                   value={perfil.especialidad}
                   onChange={handleChange}
                   placeholder="Ej: Ingeniero de Software, Magíster en Educación..."
-                  required
-                  minLength="3"
-                  maxLength="150"
+                  readOnly={true}
                 />
 
               </div>
@@ -597,40 +594,52 @@ export const PerfilTutor = () => {
                   style={{
                     position: 'absolute',
                     left: '10px',
-                    top: '10px',
+                    top: '12px',
                     color: 'var(--text-muted)'
                   }}
                 />
 
-                <select
-                  multiple
-                  name="materias_ids"
+                <div
                   className="form-control"
                   style={{
                     paddingLeft: '35px',
-                    minHeight: '160px'
+                    minHeight: '42px',
+                    height: 'auto',
+                    backgroundColor: 'var(--bg-card)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                    paddingTop: '10px',
+                    paddingBottom: '10px'
                   }}
-                  value={perfil.materias_ids}
-                  onChange={handleMateriaChange}
                 >
-
-                  {todasMaterias.map(materia => (
-                    <option
-                      key={materia.id_materia}
-                      value={materia.id_materia}
-                    >
-                      {materia.nombre_materia} (
-                      {materia.nombre_carrera || 'Sin carrera'})
-                    </option>
-                  ))}
-
-                </select>
+                  {perfil.materias_ids.length > 0 && todasMaterias.filter(m => perfil.materias_ids.includes(m.id_materia) && m.nombre_carrera === perfil.especialidad).length > 0 ? (
+                    todasMaterias
+                      .filter(m => perfil.materias_ids.includes(m.id_materia) && m.nombre_carrera === perfil.especialidad)
+                      .map(materia => (
+                        <div 
+                          key={materia.id_materia}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '0.9rem',
+                            color: 'var(--text-main)'
+                          }}
+                        >
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--upds-blue)' }} />
+                          {materia.nombre_materia} <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>({materia.nombre_carrera || 'Sin carrera'})</span>
+                        </div>
+                      ))
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)' }}>No tienes materias asignadas de tu carrera aún.</span>
+                  )}
+                </div>
 
               </div>
 
               <small className="form-help">
-                Mantén presionada la tecla Ctrl (o Cmd en Mac) para seleccionar
-                múltiples materias.
+                Las materias son asignadas exclusivamente por la administración de la universidad.
               </small>
 
             </div>

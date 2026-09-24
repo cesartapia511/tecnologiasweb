@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { RoleBadge } from '../common/Badge';
-import { Menu, LogOut, User, ChevronDown, Check } from 'lucide-react';
+import { Menu, LogOut, User, ChevronDown, Check, Bell } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
@@ -10,8 +10,9 @@ export const Header = ({ onToggleSidebar }) => {
   const { user, role, logout, login } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [roleSwitchOpen, setRoleSwitchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const notificationsRef = useRef(null);
 
   // Profile Edit State
   const [telefono, setTelefono] = useState(user?.telefono || '');
@@ -28,10 +29,30 @@ export const Header = ({ onToggleSidebar }) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const dummyNotifications = (() => {
+    if (role === 'estudiante') {
+      return [
+        { id: 1, title: 'Tutoría Confirmada', text: 'Tu solicitud de tutoría ha sido confirmada.', time: 'Hace 2 horas', read: false },
+        { id: 2, title: 'Recordatorio', text: 'Tienes una sesión programada para hoy en el Turno Tarde.', time: 'Hace 5 horas', read: true }
+      ];
+    } else if (role === 'tutor') {
+      return [
+        { id: 1, title: 'Nueva Solicitud', text: 'Tienes una nueva solicitud de tutoría académica.', time: 'Hace 1 hora', read: false },
+        { id: 2, title: 'Carta de Designación', text: 'Tienes una nueva designación para revisión.', time: 'Hace 1 día', read: true }
+      ];
+    }
+    return [
+      { id: 1, title: 'Alerta de Sistema', text: 'Nuevo usuario registrado exitosamente.', time: 'Hace 10 min', read: false }
+    ];
+  })();
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -96,11 +117,6 @@ export const Header = ({ onToggleSidebar }) => {
     }
   };
 
-  const handleQuickSwitch = async (targetUser) => {
-    await login(targetUser, 'password');
-    setRoleSwitchOpen(false);
-    setDropdownOpen(false);
-  };
 
   return (
     <header className="header">
@@ -132,97 +148,100 @@ export const Header = ({ onToggleSidebar }) => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        {/* Selector discreto de depuración/evaluación */}
-        <div style={{ position: 'relative' }}>
+        {/* Notificaciones */}
+        <div style={{ position: 'relative' }} ref={notificationsRef}>
           <button
-            onClick={() => setRoleSwitchOpen(!roleSwitchOpen)}
-            className="btn btn-outline btn-sm"
-            style={{ fontSize: '0.78rem', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '5px' }}
-            title="Cambio de perfil para evaluación"
+            onClick={() => setNotificationsOpen(!notificationsOpen)}
+            className="btn btn-outline"
+            style={{ 
+              padding: '6px', 
+              borderRadius: '50%',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              border: 'none',
+              background: notificationsOpen ? 'var(--upds-blue-subtle)' : 'transparent',
+              color: notificationsOpen ? 'var(--upds-blue-dark)' : 'var(--text-muted)'
+            }}
+            title="Notificaciones"
           >
-            <span>Perfil: <strong>{user?.nombre_rol?.toUpperCase()}</strong></span>
-            <ChevronDown size={14} />
+            <div style={{ position: 'relative' }}>
+              <Bell size={20} />
+              {dummyNotifications.some(n => !n.read) && (
+                <span style={{
+                  position: 'absolute',
+                  top: '-2px',
+                  right: '-2px',
+                  width: '8px',
+                  height: '8px',
+                  backgroundColor: 'var(--upds-red)',
+                  borderRadius: '50%',
+                  border: '2px solid white'
+                }}></span>
+              )}
+            </div>
           </button>
 
-          {roleSwitchOpen && (
+          {notificationsOpen && (
             <div
               style={{
                 position: 'absolute',
                 top: '100%',
                 right: 0,
-                marginTop: '6px',
+                marginTop: '10px',
                 background: 'white',
                 borderRadius: 'var(--radius-md)',
                 boxShadow: 'var(--shadow-xl)',
                 border: '1px solid var(--border-color)',
-                padding: '6px',
-                minWidth: '180px',
+                width: '300px',
                 zIndex: 60,
+                overflow: 'hidden'
               }}
             >
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', padding: '4px 8px', fontWeight: 600, textTransform: 'uppercase' }}>
-                Simular Sesión:
+              <div style={{ 
+                padding: '12px 16px', 
+                borderBottom: '1px solid var(--border-color)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'var(--bg-card)'
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.9rem' }}>Notificaciones</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--upds-blue)', cursor: 'pointer' }}>Marcar todas leídas</span>
               </div>
-              <button
-                type="button"
-                onClick={() => handleQuickSwitch('admin')}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '6px 8px',
-                  background: role === 'administrador' ? 'var(--upds-blue-subtle)' : 'transparent',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '0.82rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <span>Administrador</span>
-                {role === 'administrador' && <Check size={14} color="var(--upds-blue)" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickSwitch('tutor1')}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '6px 8px',
-                  background: role === 'tutor' ? 'var(--upds-blue-subtle)' : 'transparent',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '0.82rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <span>Docente Tutor</span>
-                {role === 'tutor' && <Check size={14} color="var(--upds-blue)" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickSwitch('estudiante1')}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '6px 8px',
-                  background: role === 'estudiante' ? 'var(--upds-blue-subtle)' : 'transparent',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '0.82rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <span>Estudiante Regular</span>
-                {role === 'estudiante' && <Check size={14} color="var(--upds-blue)" />}
-              </button>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {dummyNotifications.map(notif => (
+                  <div key={notif.id} style={{
+                    padding: '12px 16px',
+                    borderBottom: '1px solid var(--border-color)',
+                    backgroundColor: notif.read ? 'transparent' : 'var(--upds-blue-subtle)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-card)'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = notif.read ? 'transparent' : 'var(--upds-blue-subtle)'}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <strong style={{ fontSize: '0.85rem', color: 'var(--upds-blue-dark)' }}>{notif.title}</strong>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{notif.time}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                      {notif.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ 
+                padding: '10px', 
+                textAlign: 'center', 
+                borderTop: '1px solid var(--border-color)',
+                fontSize: '0.8rem',
+                color: 'var(--upds-blue)',
+                cursor: 'pointer',
+                fontWeight: 500
+              }}>
+                Ver todas las notificaciones
+              </div>
             </div>
           )}
         </div>
