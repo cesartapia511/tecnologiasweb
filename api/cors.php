@@ -10,6 +10,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Manejo global de excepciones para evitar errores HTTP 500 con HTML o texto plano
+set_exception_handler(function ($e) {
+    http_response_code(500);
+    
+    // Registrar el error real en los logs del servidor para no perderlo
+    error_log(sprintf(
+        "[%s] %s %s - Excepción no controlada: %s en %s:%d",
+        date('Y-m-d H:i:s'),
+        $_SERVER['REQUEST_METHOD'],
+        $_SERVER['REQUEST_URI'],
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+    ));
+
+    // Devolver un JSON limpio al frontend
+    $response = [
+        'success' => false,
+        'message' => 'Error interno del servidor. Por favor, contacte al administrador.',
+        'data' => null
+    ];
+    
+    // Si estamos en desarrollo, podríamos mostrar el error real, pero según HU-019 no debemos exponer datos sensibles
+    if ($e instanceof PDOException) {
+        $response['motivo'] = 'Ocurrió un problema de base de datos.';
+    } else {
+        $response['motivo'] = $e->getMessage();
+    }
+
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
+});
+
 function getJsonInput() {
     $raw = file_get_contents('php://input');
     if (!empty($raw)) {

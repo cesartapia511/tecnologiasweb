@@ -55,6 +55,7 @@ export const TutoriasPage = () => {
   // Modales Designación
   const [isDesignacionOpen, setIsDesignacionOpen] = useState(false);
   const [isResponderCartaOpen, setIsResponderCartaOpen] = useState(false);
+  const [isVerCartaOpen, setIsVerCartaOpen] = useState(false);
   const [selectedCarta, setSelectedCarta] = useState(null);
 
   const [designacionData, setDesignacionData] = useState({
@@ -263,6 +264,11 @@ export const TutoriasPage = () => {
     setSelectedCarta(carta);
     setResponderData({ accion: 'aceptar', motivo: '' });
     setIsResponderCartaOpen(true);
+  };
+
+  const handleOpenVerCarta = (carta) => {
+    setSelectedCarta(carta);
+    setIsVerCartaOpen(true);
   };
 
   // Guardar Respuesta
@@ -627,9 +633,21 @@ export const TutoriasPage = () => {
                           <button
                             onClick={() => handleOpenResponder(c)}
                             className="btn btn-primary btn-sm"
+                            style={{ marginRight: '4px' }}
                           >
                             <FileSignature size={14} />
                             <span>Responder</span>
+                          </button>
+                        )}
+                        {c.tipo_firma === 'aceptada' && (
+                          <button
+                            onClick={() => handleOpenVerCarta(c)}
+                            className="btn btn-outline btn-sm"
+                            title="Ver Documento Oficial"
+                            style={{ color: 'var(--upds-portal-blue)', borderColor: 'var(--upds-portal-blue)' }}
+                          >
+                            <FileText size={14} />
+                            <span>Ver Carta</span>
                           </button>
                         )}
                       </td>
@@ -1126,6 +1144,49 @@ export const TutoriasPage = () => {
             <button type="submit" className="btn btn-primary" disabled={formLoading}>{formLoading ? 'Guardando...' : 'Confirmar'}</button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal Ver Carta */}
+      <Modal isOpen={isVerCartaOpen} onClose={() => setIsVerCartaOpen(false)} title="Carta de Designación" maxWidth="680px">
+        {selectedCarta && (
+          <div>
+            <div style={{ border: '2px solid var(--upds-blue)', borderRadius: '12px', padding: '2rem', background: '#ffffff', marginBottom: '1rem', fontFamily: 'serif' }}>
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <img src="/logo-upds-oficial.png" alt="UPDS" style={{ height: '60px', objectFit: 'contain', marginBottom: '1rem' }} />
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>UNIVERSIDAD PRIVADA DOMINGO SAVIO</div>
+                <div style={{ fontSize: '1rem' }}>CARTA DE DESIGNACIÓN DE TUTOR</div>
+              </div>
+              
+              <div style={{ textAlign: 'right', marginBottom: '2rem' }}>
+                Tarija, {new Date(selectedCarta.fecha_generacion).toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+
+              <div style={{ marginBottom: '2rem', lineHeight: '1.6' }}>
+                Señor(a):<br />
+                <strong>Lic. {selectedCarta.tutor_nombre} {selectedCarta.tutor_apellido}</strong><br />
+                Presente.-
+              </div>
+
+              <div style={{ marginBottom: '2rem', lineHeight: '1.6', textAlign: 'justify' }}>
+                De mi mayor consideración:<br /><br />
+                Mediante la presente, tengo a bien comunicarle que ha sido designado(a) como <strong>Tutor(a)</strong> del(la) estudiante <strong>{selectedCarta.estudiante_nombre} {selectedCarta.estudiante_apellido}</strong>, quien se encuentra desarrollando la modalidad de graduación <strong>{selectedCarta.nombre_modalidad || 'Proyecto de Grado'}</strong>.<br /><br />
+                Agradecemos su compromiso con la excelencia académica y le deseamos el mayor de los éxitos en el acompañamiento de este proceso.
+              </div>
+
+              <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+                <div style={{ borderTop: '1px solid #000', width: '250px', margin: '0 auto 8px' }}></div>
+                <strong>Firma y Sello de Coordinación</strong>
+              </div>
+            </div>
+            <div className="modal-footer" style={{ border: 'none', background: 'transparent' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => setIsVerCartaOpen(false)}>Cerrar</button>
+              <button type="button" className="btn btn-primary" onClick={() => window.print()} title="Imprimir Carta">
+                <Printer size={16} />
+                <span>Imprimir Carta</span>
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
