@@ -5,7 +5,8 @@ import {
   tutoresService,
   evaluacionesService,
   cartasService,
-  estudiantesService
+  estudiantesService,
+  reunionesService
 } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -24,6 +25,7 @@ import {
   FileText,
   Printer,
   FileSignature,
+  Users,
 } from 'lucide-react';
 
 export const TutoriasPage = () => {
@@ -57,6 +59,21 @@ export const TutoriasPage = () => {
   const [isResponderCartaOpen, setIsResponderCartaOpen] = useState(false);
   const [isVerCartaOpen, setIsVerCartaOpen] = useState(false);
   const [selectedCarta, setSelectedCarta] = useState(null);
+
+  // Modales Reuniones
+  const [isReunionesOpen, setIsReunionesOpen] = useState(false);
+  const [reuniones, setReuniones] = useState([]);
+  const [selectedTutoriaReunion, setSelectedTutoriaReunion] = useState(null);
+  const [reunionFormData, setReunionFormData] = useState({
+    fecha: '',
+    hora_inicio: '',
+    hora_fin: '',
+    lugar_o_enlace: '',
+    asistio_estudiante: 'si',
+    minutos_tardanza: 0,
+    evidencia_url: '',
+    observaciones: ''
+  });
 
   const [designacionData, setDesignacionData] = useState({
     id_estudiante: '',
@@ -291,6 +308,78 @@ export const TutoriasPage = () => {
     }
   };
 
+  // ----------------------------------------------------
+  // REUNIONES
+  // ----------------------------------------------------
+
+  const fetchReuniones = async (id_tutoria) => {
+    try {
+      setFormLoading(true);
+      const data = await reunionesService.obtenerPorTutoria(id_tutoria);
+      setReuniones(data || []);
+    } catch (error) {
+      showError(error.message || 'Error al obtener reuniones');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleOpenReuniones = (tutoria) => {
+    setSelectedTutoriaReunion(tutoria);
+    setReuniones([]);
+    setReunionFormData({
+      fecha: new Date().toISOString().split('T')[0],
+      hora_inicio: '',
+      hora_fin: '',
+      lugar_o_enlace: '',
+      asistio_estudiante: 'si',
+      minutos_tardanza: 0,
+      evidencia_url: '',
+      observaciones: ''
+    });
+    fetchReuniones(tutoria.id_tutoria);
+    setIsReunionesOpen(true);
+  };
+
+  const handleCreateReunion = async (e) => {
+    e.preventDefault();
+    try {
+      setFormLoading(true);
+      await reunionesService.crear({
+        ...reunionFormData,
+        id_tutoria: selectedTutoriaReunion.id_tutoria
+      });
+      showSuccess('Reunión registrada exitosamente');
+      setReunionFormData({
+        fecha: new Date().toISOString().split('T')[0],
+        hora_inicio: '',
+        hora_fin: '',
+        lugar_o_enlace: '',
+        asistio_estudiante: 'si',
+        minutos_tardanza: 0,
+        evidencia_url: '',
+        observaciones: ''
+      });
+      fetchReuniones(selectedTutoriaReunion.id_tutoria);
+    } catch (error) {
+      showError(error.message || 'Error al registrar reunión');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleFirmarReunion = async (id_reunion, tipo_firma) => {
+    try {
+      setFormLoading(true);
+      await reunionesService.firmar({ id_reunion, accion: tipo_firma });
+      showSuccess('Firma registrada exitosamente');
+      fetchReuniones(selectedTutoriaReunion.id_tutoria);
+    } catch (error) {
+      showError(error.message || 'Error al firmar');
+    } finally {
+      setFormLoading(false);
+    }
+  };
 
   // Lógica de filtrado combinado
   const filteredTutorias = tutorias.filter(t => {
@@ -493,6 +582,17 @@ export const TutoriasPage = () => {
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '6px' }}>
+                        {/* Botón Reuniones */}
+                        <button
+                          onClick={() => handleOpenReuniones(t)}
+                          className="btn btn-outline btn-sm"
+                          title="Ver Reuniones"
+                          style={{ color: 'var(--upds-blue)', borderColor: 'var(--upds-blue)' }}
+                        >
+                          <Users size={14} />
+                          <span>Reuniones</span>
+                        </button>
+
                         {/* Botón Ver Ficha / Acta Oficial */}
                         <button
                           onClick={() => handleOpenActa(t)}
@@ -1184,6 +1284,118 @@ export const TutoriasPage = () => {
                 <Printer size={16} />
                 <span>Imprimir Carta</span>
               </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Reuniones */}
+      <Modal isOpen={isReunionesOpen} onClose={() => setIsReunionesOpen(false)} title="Registro de Reuniones de Tutoría" maxWidth="800px">
+        {selectedTutoriaReunion && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ background: '#f8f9fa', padding: '1rem', borderRadius: '8px' }}>
+              <strong>Materia:</strong> {selectedTutoriaReunion.nombre_materia} <br />
+              <strong>Tutor:</strong> Lic. {selectedTutoriaReunion.tutor_nombre} {selectedTutoriaReunion.tutor_apellido} <br />
+              <strong>Estudiante:</strong> {selectedTutoriaReunion.estudiante_nombre} {selectedTutoriaReunion.estudiante_apellido}
+            </div>
+
+            {(isDocente || isAdmin) && (
+              <form onSubmit={handleCreateReunion} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid #e0e0e0', padding: '1rem', borderRadius: '8px' }}>
+                <h5>Registrar Nueva Reunión</h5>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
+                    <label className="form-label">Fecha</label>
+                    <input type="date" className="form-control" value={reunionFormData.fecha} onChange={e => setReunionFormData({...reunionFormData, fecha: e.target.value})} required />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '120px' }}>
+                    <label className="form-label">Hora Inicio</label>
+                    <input type="time" className="form-control" value={reunionFormData.hora_inicio} onChange={e => setReunionFormData({...reunionFormData, hora_inicio: e.target.value})} required />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '120px' }}>
+                    <label className="form-label">Hora Fin</label>
+                    <input type="time" className="form-control" value={reunionFormData.hora_fin} onChange={e => setReunionFormData({...reunionFormData, hora_fin: e.target.value})} required />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ flex: 2, minWidth: '200px' }}>
+                    <label className="form-label">Lugar / Enlace</label>
+                    <input type="text" className="form-control" value={reunionFormData.lugar_o_enlace} onChange={e => setReunionFormData({...reunionFormData, lugar_o_enlace: e.target.value})} />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
+                    <label className="form-label">Asistencia Estudiante</label>
+                    <select className="form-control" value={reunionFormData.asistio_estudiante} onChange={e => setReunionFormData({...reunionFormData, asistio_estudiante: e.target.value})} required>
+                      <option value="si">Asistió</option>
+                      <option value="no">No asistió</option>
+                      <option value="tardanza">Tardanza</option>
+                      <option value="no_aplica">No aplica</option>
+                    </select>
+                  </div>
+                  {reunionFormData.asistio_estudiante === 'tardanza' && (
+                    <div className="form-group" style={{ flex: 1, minWidth: '120px' }}>
+                      <label className="form-label">Minutos Tardanza</label>
+                      <input type="number" min="1" className="form-control" value={reunionFormData.minutos_tardanza} onChange={e => setReunionFormData({...reunionFormData, minutos_tardanza: parseInt(e.target.value) || 0})} required />
+                    </div>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Evidencia (URL)</label>
+                  <input type="url" className="form-control" placeholder="https://..." value={reunionFormData.evidencia_url} onChange={e => setReunionFormData({...reunionFormData, evidencia_url: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Observaciones</label>
+                  <textarea className="form-control" value={reunionFormData.observaciones} onChange={e => setReunionFormData({...reunionFormData, observaciones: e.target.value})}></textarea>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <button type="submit" className="btn btn-primary" disabled={formLoading}>
+                    {formLoading ? 'Guardando...' : 'Registrar Reunión'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div>
+              <h5>Historial de Reuniones</h5>
+              {reuniones.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)' }}>No hay reuniones registradas.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {reuniones.map((r, index) => (
+                    <div key={r.id_reunion} style={{ border: '1px solid #ddd', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <h6 style={{ margin: 0, color: 'var(--upds-blue)' }}>Reunión #{reuniones.length - index}</h6>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{r.fecha} ({r.hora_inicio.slice(0,5)} - {r.hora_fin.slice(0,5)})</span>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        <strong>Asistencia:</strong> <StatusBadge status={r.asistio_estudiante === 'si' ? 'confirmada' : r.asistio_estudiante === 'no' ? 'cancelada' : 'pendiente'} /> 
+                        {r.asistio_estudiante === 'tardanza' && ` (${r.minutos_tardanza} min)`}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        <strong>Lugar/Enlace:</strong> {r.lugar_o_enlace || 'N/A'} <br/>
+                        <strong>Observaciones:</strong> {r.observaciones || 'Ninguna'}
+                      </div>
+                      {r.evidencia_url && (
+                        <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                          <a href={r.evidencia_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--upds-blue)', textDecoration: 'underline' }}>Ver Evidencia</a>
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '0.5rem' }}>
+                        <div style={{ flex: 1 }}>
+                          <strong>Firma Tutor:</strong> {r.firma_tutor == 1 ? <span style={{ color: 'green' }}><Check size={14}/> Firmado</span> : <span style={{ color: 'orange' }}>Pendiente</span>}
+                          {isDocente && r.firma_tutor == 0 && (
+                            <button onClick={() => handleFirmarReunion(r.id_reunion, 'firmar_tutor')} className="btn btn-primary btn-sm" style={{ marginLeft: '10px', fontSize: '0.75rem', padding: '2px 8px' }}>Firmar</button>
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <strong>Firma Estudiante:</strong> {r.firma_estudiante == 1 ? <span style={{ color: 'green' }}><Check size={14}/> Firmado</span> : <span style={{ color: 'orange' }}>Pendiente</span>}
+                          {isEstudiante && r.firma_estudiante == 0 && (
+                            <button onClick={() => handleFirmarReunion(r.id_reunion, 'firmar_estudiante')} className="btn btn-primary btn-sm" style={{ marginLeft: '10px', fontSize: '0.75rem', padding: '2px 8px' }}>Firmar</button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

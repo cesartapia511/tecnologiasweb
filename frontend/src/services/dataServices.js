@@ -94,3 +94,9 @@ export const cartasService = {
   create: async (data) => await api.post('/cartas_designacion/index.php', data),
   updateStatus: async (data) => await api.put('/cartas_designacion/index.php', data),
 };
+
+export const reunionesService = {
+  obtenerPorTutoria: async (id_tutoria) => (await api.get(`/reuniones/index.php?id_tutoria=${id_tutoria}`)).data,
+  crear: async (data) => await api.post('/reuniones/index.php', data),
+  firmar: async (data) => await api.put('/reuniones/index.php', data),
+};
