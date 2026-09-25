@@ -92,9 +92,9 @@ const PerfilEstudiante = () => {
       return;
     }
 
-    if (claveNueva && !claveActual) {
+    if (!claveActual) {
       showError(
-        'Debes ingresar tu contraseña actual para realizar el cambio'
+        'Debes ingresar tu contraseña actual para confirmar los cambios'
       );
       return;
     }

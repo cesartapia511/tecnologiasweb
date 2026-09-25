@@ -349,7 +349,7 @@ export const ReportesPage = () => {
               <h2 className="card-title">Detalle de Tutorías (Resultados Recientes)</h2>
             </div>
             <div className="table-responsive">
-              <table className="table">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>ID</th>

@@ -4,6 +4,8 @@ import {
   materiasService,
   tutoresService,
   evaluacionesService,
+  cartasService,
+  estudiantesService
 } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -21,6 +23,7 @@ import {
   RefreshCw,
   FileText,
   Printer,
+  FileSignature,
 } from 'lucide-react';
 
 export const TutoriasPage = () => {
@@ -30,6 +33,11 @@ export const TutoriasPage = () => {
   const [tutores, setTutores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('todas');
+  
+  // Cartas y Estudiantes para Designación
+  const [cartas, setCartas] = useState([]);
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [activeTab, setActiveTab] = useState('reforzamiento'); // reforzamiento | designaciones
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFecha, setSelectedFecha] = useState('');
@@ -44,13 +52,29 @@ export const TutoriasPage = () => {
   const [actaTutoria, setActaTutoria] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
+  // Modales Designación
+  const [isDesignacionOpen, setIsDesignacionOpen] = useState(false);
+  const [isResponderCartaOpen, setIsResponderCartaOpen] = useState(false);
+  const [selectedCarta, setSelectedCarta] = useState(null);
+
+  const [designacionData, setDesignacionData] = useState({
+    id_estudiante: '',
+    id_tutor: '',
+    id_modalidad: '1',
+  });
+
+  const [responderData, setResponderData] = useState({
+    accion: 'aceptar',
+    motivo: '',
+  });
+
   // Form Solicitud (Estudiante)
   const [solicitudData, setSolicitudData] = useState({
     id_materia: '',
     id_tutor: '',
     fecha: '',
-    hora_inicio: '14:00',
-    hora_fin: '15:30',
+    hora_inicio: '15:00',
+    hora_fin: '18:00',
     modalidad: 'virtual',
     lugar_o_enlace: 'meet.google.com/upds-tarija',
     observaciones: '',
@@ -81,21 +105,34 @@ export const TutoriasPage = () => {
         params.id_estudiante = user.id_estudiante;
       }
 
-      const [tData, mData, tutData] = await Promise.all([
+      const [tData, mData, tutData, cData, estData] = await Promise.all([
         tutoriasService.getAll(params),
         materiasService.getAll(),
         tutoresService.getAll(),
+        cartasService.getAll(params),
+        isAdmin ? estudiantesService.getAll() : Promise.resolve([]),
       ]);
 
       setTutorias(tData || []);
       setMaterias(mData || []);
       setTutores(tutData || []);
+      setCartas(cData || []);
+      setEstudiantes(estData || []);
 
       if (mData?.length > 0 && tutData?.length > 0) {
+        let initialMateria = mData[0].id_materia;
+        if (isEstudiante && user?.id_carrera) {
+          const userMateria = mData.find(m => String(m.id_carrera) === String(user.id_carrera) || !m.id_carrera);
+          if (userMateria) initialMateria = userMateria.id_materia;
+        }
+
+        const validTutores = tutData.filter(t => t.materias?.some(m => String(m.id_materia) === String(initialMateria)));
+        const initialTutor = validTutores.length > 0 ? validTutores[0].id_tutor : '';
+
         setSolicitudData((prev) => ({
           ...prev,
-          id_materia: mData[0].id_materia,
-          id_tutor: tutData[0].id_tutor,
+          id_materia: initialMateria,
+          id_tutor: initialTutor,
           fecha: new Date().toISOString().split('T')[0],
         }));
       }
@@ -205,6 +242,50 @@ export const TutoriasPage = () => {
     setIsActaOpen(true);
   };
 
+  // Crear Designacion
+  const handleCrearDesignacion = async (e) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await cartasService.create(designacionData);
+      showSuccess('Carta de designación y tutoría generadas con éxito');
+      setIsDesignacionOpen(false);
+      loadData();
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // Abrir Modal Responder
+  const handleOpenResponder = (carta) => {
+    setSelectedCarta(carta);
+    setResponderData({ accion: 'aceptar', motivo: '' });
+    setIsResponderCartaOpen(true);
+  };
+
+  // Guardar Respuesta
+  const handleSaveResponder = async (e) => {
+    e.preventDefault();
+    setFormLoading(true);
+    try {
+      await cartasService.updateStatus({
+        id_carta: selectedCarta.id_carta,
+        accion: responderData.accion,
+        motivo: responderData.motivo
+      });
+      showSuccess(`Carta ${responderData.accion}da con éxito`);
+      setIsResponderCartaOpen(false);
+      loadData();
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+
   // Lógica de filtrado combinado
   const filteredTutorias = tutorias.filter(t => {
     // Filtro por Estado
@@ -235,7 +316,7 @@ export const TutoriasPage = () => {
               : 'Control y Seguimiento de Tutorías'}
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Registro formal de sesiones de reforzamiento académico - UPDS Tarija
+            Registro formal de sesiones de reforzamiento y designaciones - UPDS Tarija
           </p>
         </div>
 
@@ -244,6 +325,14 @@ export const TutoriasPage = () => {
             <RefreshCw size={15} />
             <span>Actualizar</span>
           </button>
+          
+          {isAdmin && (
+            <button onClick={() => setIsDesignacionOpen(true)} className="btn btn-primary" style={{ backgroundColor: 'var(--upds-blue)' }}>
+              <FileSignature size={18} />
+              <span>Generar Designación</span>
+            </button>
+          )}
+
           {(isEstudiante || isAdmin) && (
             <button onClick={() => setIsSolicitudOpen(true)} className="btn btn-primary">
               <Plus size={18} />
@@ -252,6 +341,24 @@ export const TutoriasPage = () => {
           )}
         </div>
       </div>
+
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #e2e8f0', marginBottom: '1.5rem' }}>
+        <button 
+          onClick={() => setActiveTab('reforzamiento')}
+          style={{ padding: '0.75rem 1.5rem', border: 'none', background: 'none', borderBottom: activeTab === 'reforzamiento' ? '3px solid var(--upds-blue)' : '3px solid transparent', color: activeTab === 'reforzamiento' ? 'var(--upds-blue-dark)' : 'var(--text-muted)', fontWeight: activeTab === 'reforzamiento' ? 'bold' : 'normal', cursor: 'pointer' }}
+        >
+          Reforzamiento Académico (Materias)
+        </button>
+        <button 
+          onClick={() => setActiveTab('designaciones')}
+          style={{ padding: '0.75rem 1.5rem', border: 'none', background: 'none', borderBottom: activeTab === 'designaciones' ? '3px solid var(--upds-red)' : '3px solid transparent', color: activeTab === 'designaciones' ? 'var(--upds-red)' : 'var(--text-muted)', fontWeight: activeTab === 'designaciones' ? 'bold' : 'normal', cursor: 'pointer' }}
+        >
+          Modalidad de Graduación (Designaciones)
+        </button>
+      </div>
+
+      {activeTab === 'reforzamiento' && (
+        <>
 
       {/* Pestañas de Filtrado por Estado y Búsqueda */}
       <div className="card" style={{ marginBottom: '1.25rem', padding: '1rem' }}>
@@ -476,6 +583,70 @@ export const TutoriasPage = () => {
           </div>
         )}
       </div>
+      </>
+      )}
+
+      {activeTab === 'designaciones' && (
+        <div className="card">
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+              Cargando designaciones...
+            </div>
+          ) : cartas.length > 0 ? (
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Modalidad</th>
+                    <th>Tutor Asignado</th>
+                    <th>Estudiante</th>
+                    <th>Firma Tutor</th>
+                    <th>Estado Tutoría</th>
+                    <th style={{ textAlign: 'right' }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartas.map((c) => (
+                    <tr key={c.id_carta}>
+                      <td style={{ fontWeight: 600 }}>
+                        {c.id_modalidad === 1 ? 'Proyecto de Grado' : c.id_modalidad === 2 ? 'Tesis' : 'Trabajo Dirigido'}
+                      </td>
+                      <td>Lic. {c.tutor_nombre} {c.tutor_apellido}</td>
+                      <td>{c.estudiante_nombre} {c.estudiante_apellido}</td>
+                      <td>
+                        <StatusBadge status={c.tipo_firma} />
+                        {c.tipo_firma === 'rechazada' && c.motivo_rechazo && (
+                          <small style={{ display: 'block', color: 'var(--upds-red)' }}>
+                            Motivo: {c.motivo_rechazo}
+                          </small>
+                        )}
+                      </td>
+                      <td><StatusBadge status={c.estado_tutoria} /></td>
+                      <td style={{ textAlign: 'right' }}>
+                        {isDocente && c.tipo_firma === 'pendiente' && (
+                          <button
+                            onClick={() => handleOpenResponder(c)}
+                            className="btn btn-primary btn-sm"
+                          >
+                            <FileSignature size={14} />
+                            <span>Responder</span>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '3.5rem' }}>
+              <FileSignature size={48} color="var(--upds-blue)" style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+              <h3>No hay cartas de designación</h3>
+              <p style={{ color: 'var(--text-muted)' }}>No se encontraron registros de asignaciones formales.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* MODAL: FICHA / ACTA OFICIAL DE TUTORÍA UPDS (Listo para presentar/imprimir) */}
       <Modal
@@ -622,10 +793,18 @@ export const TutoriasPage = () => {
             <select
               className="form-control"
               value={solicitudData.id_materia}
-              onChange={(e) => setSolicitudData({ ...solicitudData, id_materia: e.target.value })}
+              onChange={(e) => {
+                const newMateriaId = e.target.value;
+                const newTutores = tutores.filter(t => t.materias?.some(m => String(m.id_materia) === String(newMateriaId)));
+                setSolicitudData({ 
+                  ...solicitudData, 
+                  id_materia: newMateriaId,
+                  id_tutor: newTutores.length > 0 ? newTutores[0].id_tutor : ''
+                });
+              }}
               required
             >
-              {materias.map((m) => (
+              {(isEstudiante && user?.id_carrera ? materias.filter(m => String(m.id_carrera) === String(user.id_carrera) || !m.id_carrera) : materias).map((m) => (
                 <option key={m.id_materia} value={m.id_materia}>
                   {m.nombre_materia} ({m.nombre_carrera || 'Tronco Común'})
                 </option>
@@ -641,15 +820,21 @@ export const TutoriasPage = () => {
               onChange={(e) => setSolicitudData({ ...solicitudData, id_tutor: e.target.value })}
               required
             >
-              {tutores.map((t) => (
+              <option value="" disabled>Seleccione un tutor disponible</option>
+              {tutores.filter(t => t.materias?.some(m => String(m.id_materia) === String(solicitudData.id_materia))).map((t) => (
                 <option key={t.id_tutor} value={t.id_tutor}>
                   Lic. {t.nombre} {t.apellido} — {t.especialidad || 'Docente Tutor UPDS'}
                 </option>
               ))}
             </select>
+            {tutores.filter(t => t.materias?.some(m => String(m.id_materia) === String(solicitudData.id_materia))).length === 0 && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--upds-red)', marginTop: '4px', display: 'block' }}>
+                No hay docentes tutores asignados a esta materia actualmente.
+              </span>
+            )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <div className="form-group">
               <label className="form-label">Fecha de Sesión</label>
               <input
@@ -661,24 +846,24 @@ export const TutoriasPage = () => {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Hora Inicio</label>
-              <input
-                type="time"
+              <label className="form-label">Turno Académico (UPDS)</label>
+              <select
                 className="form-control"
                 required
                 value={solicitudData.hora_inicio}
-                onChange={(e) => setSolicitudData({ ...solicitudData, hora_inicio: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Hora Fin</label>
-              <input
-                type="time"
-                className="form-control"
-                required
-                value={solicitudData.hora_fin}
-                onChange={(e) => setSolicitudData({ ...solicitudData, hora_fin: e.target.value })}
-              />
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '07:30') setSolicitudData({ ...solicitudData, hora_inicio: '07:30', hora_fin: '10:30' });
+                  if (val === '11:00') setSolicitudData({ ...solicitudData, hora_inicio: '11:00', hora_fin: '14:00' });
+                  if (val === '15:00') setSolicitudData({ ...solicitudData, hora_inicio: '15:00', hora_fin: '18:00' });
+                  if (val === '19:00') setSolicitudData({ ...solicitudData, hora_inicio: '19:00', hora_fin: '22:00' });
+                }}
+              >
+                <option value="07:30">Turno Mañana (07:30 a 10:30)</option>
+                <option value="11:00">Turno Mediodía (11:00 a 14:00)</option>
+                <option value="15:00">Turno Tarde (15:00 a 18:00)</option>
+                <option value="19:00">Turno Noche (19:00 a 22:00)</option>
+              </select>
             </div>
           </div>
 
@@ -847,6 +1032,98 @@ export const TutoriasPage = () => {
             <button type="submit" className="btn btn-primary" disabled={formLoading}>
               {formLoading ? 'Guardando...' : 'Guardar Evaluación'}
             </button>
+          </div>
+        </form>
+      </Modal>
+      {/* Modal Generar Designación */}
+      <Modal isOpen={isDesignacionOpen} onClose={() => setIsDesignacionOpen(false)} title="Generar Carta de Designación">
+        <form onSubmit={handleCrearDesignacion}>
+          <div className="form-group">
+            <label className="form-label">Estudiante</label>
+            <select
+              className="form-control"
+              value={designacionData.id_estudiante}
+              onChange={(e) => setDesignacionData({ ...designacionData, id_estudiante: e.target.value })}
+              required
+            >
+              <option value="">Seleccione un estudiante...</option>
+              {estudiantes.map((est) => (
+                <option key={est.id_estudiante} value={est.id_estudiante}>
+                  {est.nombre} {est.apellido}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Tutor</label>
+            <select
+              className="form-control"
+              value={designacionData.id_tutor}
+              onChange={(e) => setDesignacionData({ ...designacionData, id_tutor: e.target.value })}
+              required
+            >
+              <option value="">Seleccione un tutor...</option>
+              {tutores.map((t) => (
+                <option key={t.id_tutor} value={t.id_tutor}>
+                  Lic. {t.nombre} {t.apellido}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Modalidad de Graduación</label>
+            <select
+              className="form-control"
+              value={designacionData.id_modalidad}
+              onChange={(e) => setDesignacionData({ ...designacionData, id_modalidad: e.target.value })}
+              required
+            >
+              <option value="1">Proyecto de Grado</option>
+              <option value="2">Tesis</option>
+              <option value="3">Trabajo Dirigido</option>
+            </select>
+          </div>
+          <div className="modal-footer" style={{ margin: '1.5rem -1.5rem -1.5rem -1.5rem' }}>
+            <button type="button" className="btn btn-secondary" onClick={() => setIsDesignacionOpen(false)} disabled={formLoading}>Cancelar</button>
+            <button type="submit" className="btn btn-primary" disabled={formLoading}>{formLoading ? 'Generando...' : 'Generar Designación'}</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Responder Carta */}
+      <Modal isOpen={isResponderCartaOpen} onClose={() => setIsResponderCartaOpen(false)} title="Responder Carta de Designación">
+        <form onSubmit={handleSaveResponder}>
+          <div className="form-group">
+            <label className="form-label">Respuesta</label>
+            <select
+              className="form-control"
+              value={responderData.accion}
+              onChange={(e) => setResponderData({ ...responderData, accion: e.target.value })}
+              required
+            >
+              <option value="aceptar">Aceptar y Firmar</option>
+              <option value="rechazar">Rechazar</option>
+            </select>
+          </div>
+          {responderData.accion === 'rechazar' && (
+            <div className="form-group">
+              <label className="form-label">Motivo de Rechazo</label>
+              <select
+                className="form-control"
+                value={responderData.motivo}
+                onChange={(e) => setResponderData({ ...responderData, motivo: e.target.value })}
+                required
+              >
+                <option value="">Seleccione el motivo...</option>
+                <option value="Capacidad Excedida">No dispongo de capacidad (Límite alcanzado)</option>
+                <option value="Falta de Tiempo">Falta de tiempo en el semestre actual</option>
+                <option value="Conflicto de Interés / Derecho">Conflicto de interés o causa justificada</option>
+              </select>
+            </div>
+          )}
+          <div className="modal-footer" style={{ margin: '1.5rem -1.5rem -1.5rem -1.5rem' }}>
+            <button type="button" className="btn btn-secondary" onClick={() => setIsResponderCartaOpen(false)} disabled={formLoading}>Cancelar</button>
+            <button type="submit" className="btn btn-primary" disabled={formLoading}>{formLoading ? 'Guardando...' : 'Confirmar'}</button>
           </div>
         </form>
       </Modal>
