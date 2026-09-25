@@ -6,7 +6,8 @@ import {
   evaluacionesService,
   cartasService,
   estudiantesService,
-  reunionesService
+  reunionesService,
+  informesService
 } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -26,6 +27,7 @@ import {
   Printer,
   FileSignature,
   Users,
+  ClipboardList,
 } from 'lucide-react';
 
 export const TutoriasPage = () => {
@@ -73,6 +75,17 @@ export const TutoriasPage = () => {
     minutos_tardanza: 0,
     evidencia_url: '',
     observaciones: ''
+  });
+
+  // Modales Informes
+  const [isInformesOpen, setIsInformesOpen] = useState(false);
+  const [informes, setInformes] = useState([]);
+  const [selectedTutoriaInforme, setSelectedTutoriaInforme] = useState(null);
+  const [informeFormData, setInformeFormData] = useState({
+    numero_informe: '',
+    fecha_limite: '',
+    descripcion_avance: '',
+    porcentaje_avance: 0
   });
 
   const [designacionData, setDesignacionData] = useState({
@@ -381,6 +394,74 @@ export const TutoriasPage = () => {
     }
   };
 
+  // ----------------------------------------------------
+  // INFORMES DE AVANCE
+  // ----------------------------------------------------
+
+  const fetchInformes = async (id_tutoria) => {
+    try {
+      setFormLoading(true);
+      const data = await informesService.obtenerPorTutoria(id_tutoria);
+      setInformes(data || []);
+    } catch (error) {
+      showError(error.message || 'Error al obtener informes');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleOpenInformes = (tutoria) => {
+    setSelectedTutoriaInforme(tutoria);
+    setInformes([]);
+    setInformeFormData({
+      numero_informe: '',
+      fecha_limite: '',
+      descripcion_avance: '',
+      porcentaje_avance: 0
+    });
+    fetchInformes(tutoria.id_tutoria);
+    setIsInformesOpen(true);
+  };
+
+  const handleCreateInforme = async (e) => {
+    e.preventDefault();
+    try {
+      setFormLoading(true);
+      await informesService.crear({
+        ...informeFormData,
+        id_tutoria: selectedTutoriaInforme.id_tutoria
+      });
+      showSuccess('Informe registrado exitosamente');
+      setInformeFormData({
+        numero_informe: '',
+        fecha_limite: '',
+        descripcion_avance: '',
+        porcentaje_avance: 0
+      });
+      fetchInformes(selectedTutoriaInforme.id_tutoria);
+    } catch (error) {
+      showError(error.message || 'Error al registrar informe');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const calcularEstadoInforme = (fecha_limite, porcentaje) => {
+    if (porcentaje >= 100) return { texto: 'Completado', color: 'green' };
+    if (!fecha_limite) return { texto: 'En plazo', color: 'var(--upds-blue)' };
+    
+    const limite = new Date(fecha_limite);
+    const hoy = new Date();
+    // Normalizar a media noche para comparación justa de días
+    limite.setHours(0,0,0,0);
+    hoy.setHours(0,0,0,0);
+    
+    if (hoy > limite) {
+      return { texto: 'Atrasado', color: 'var(--upds-red)' };
+    }
+    return { texto: 'En plazo', color: 'var(--upds-blue)' };
+  };
+
   // Lógica de filtrado combinado
   const filteredTutorias = tutorias.filter(t => {
     // Filtro por Estado
@@ -582,6 +663,17 @@ export const TutoriasPage = () => {
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '6px' }}>
+                        {/* Botón Informes */}
+                        <button
+                          onClick={() => handleOpenInformes(t)}
+                          className="btn btn-outline btn-sm"
+                          title="Ver Informes de Avance"
+                          style={{ color: 'var(--upds-red)', borderColor: 'var(--upds-red)' }}
+                        >
+                          <ClipboardList size={14} />
+                          <span>Informes</span>
+                        </button>
+
                         {/* Botón Reuniones */}
                         <button
                           onClick={() => handleOpenReuniones(t)}
@@ -1394,6 +1486,90 @@ export const TutoriasPage = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Informes de Avance */}
+      <Modal isOpen={isInformesOpen} onClose={() => setIsInformesOpen(false)} title="Informes de Avance y Seguimiento" maxWidth="800px">
+        {selectedTutoriaInforme && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ background: '#f8f9fa', padding: '1rem', borderRadius: '8px' }}>
+              <strong>Materia:</strong> {selectedTutoriaInforme.nombre_materia} <br />
+              <strong>Tutor:</strong> Lic. {selectedTutoriaInforme.tutor_nombre} {selectedTutoriaInforme.tutor_apellido} <br />
+              <strong>Estudiante:</strong> {selectedTutoriaInforme.estudiante_nombre} {selectedTutoriaInforme.estudiante_apellido}
+            </div>
+
+            {(isDocente || isAdmin) && (
+              <form onSubmit={handleCreateInforme} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid #e0e0e0', padding: '1rem', borderRadius: '8px' }}>
+                <h5>Registrar Nuevo Informe</h5>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ flex: 1, minWidth: '120px' }}>
+                    <label className="form-label">Nº Informe (Opcional)</label>
+                    <input type="number" min="1" className="form-control" placeholder="Auto" value={informeFormData.numero_informe} onChange={e => setInformeFormData({...informeFormData, numero_informe: e.target.value})} />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
+                    <label className="form-label">Fecha Límite</label>
+                    <input type="date" className="form-control" value={informeFormData.fecha_limite} onChange={e => setInformeFormData({...informeFormData, fecha_limite: e.target.value})} />
+                  </div>
+                  <div className="form-group" style={{ flex: 2, minWidth: '200px' }}>
+                    <label className="form-label">Porcentaje de Avance (%)</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <input type="range" min="0" max="100" step="5" style={{ flex: 1 }} value={informeFormData.porcentaje_avance} onChange={e => setInformeFormData({...informeFormData, porcentaje_avance: parseInt(e.target.value)})} />
+                      <span style={{ fontWeight: 'bold', width: '40px' }}>{informeFormData.porcentaje_avance}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Descripción del Avance</label>
+                  <textarea className="form-control" required rows="3" value={informeFormData.descripcion_avance} onChange={e => setInformeFormData({...informeFormData, descripcion_avance: e.target.value})}></textarea>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <button type="submit" className="btn btn-primary" disabled={formLoading}>
+                    {formLoading ? 'Registrando...' : 'Registrar Informe'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div>
+              <h5>Historial de Informes</h5>
+              {informes.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)' }}>No hay informes registrados.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {informes.map((inf) => {
+                    const estado = calcularEstadoInforme(inf.fecha_limite, inf.porcentaje_avance);
+                    return (
+                      <div key={inf.id_informe} style={{ border: '1px solid #ddd', padding: '1rem', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
+                          <h6 style={{ margin: 0, color: 'var(--upds-blue)' }}>Informe #{inf.numero_informe}</h6>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: estado.color, padding: '2px 8px', borderRadius: '12px', background: `${estado.color}15` }}>
+                            {estado.texto}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>
+                          Registrado: {inf.fecha_registro} | Límite: {inf.fecha_limite || 'Sin fecha límite'}
+                        </div>
+                        <div style={{ marginBottom: '1rem' }}>
+                          <strong>Descripción:</strong>
+                          <p style={{ margin: '0.5rem 0', whiteSpace: 'pre-wrap', fontSize: '0.9rem' }}>{inf.descripcion_avance}</p>
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
+                            <span>Progreso de Avance</span>
+                            <span style={{ fontWeight: 'bold' }}>{inf.porcentaje_avance}%</span>
+                          </div>
+                          <div style={{ background: '#eee', height: '12px', borderRadius: '6px', overflow: 'hidden' }}>
+                            <div style={{ background: estado.color, width: `${inf.porcentaje_avance}%`, height: '100%', transition: 'width 0.3s' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

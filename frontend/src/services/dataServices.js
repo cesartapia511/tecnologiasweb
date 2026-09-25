@@ -100,3 +100,8 @@ export const reunionesService = {
   crear: async (data) => await api.post('/reuniones/index.php', data),
   firmar: async (data) => await api.put('/reuniones/index.php', data),
 };
+
+export const informesService = {
+  obtenerPorTutoria: async (id_tutoria) => (await api.get(`/informes_avance/index.php?id_tutoria=${id_tutoria}`)).data,
+  crear: async (data) => await api.post('/informes_avance/index.php', data),
+};
