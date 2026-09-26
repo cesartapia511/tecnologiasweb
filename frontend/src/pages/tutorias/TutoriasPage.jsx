@@ -33,6 +33,8 @@ import {
 export const TutoriasPage = () => {
   const { user, role, isAdmin, isDocente, isEstudiante } = useAuth();
   const [tutorias, setTutorias] = useState([]);
+  const [tutoriasDisponibles, setTutoriasDisponibles] = useState([]);
+  const [periodoInscripcion, setPeriodoInscripcion] = useState(null);
   const [materias, setMaterias] = useState([]);
   const [tutores, setTutores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -136,12 +138,13 @@ export const TutoriasPage = () => {
         params.id_estudiante = user.id_estudiante;
       }
 
-      const [tData, mData, tutData, cData, estData] = await Promise.all([
+      const [tData, mData, tutData, cData, estData, disponiblesData] = await Promise.all([
         tutoriasService.getAll(params),
         materiasService.getAll(),
         tutoresService.getAll(),
         cartasService.getAll(params),
         isAdmin ? estudiantesService.getAll() : Promise.resolve([]),
+        isEstudiante ? tutoriasService.disponibles() : Promise.resolve(null),
       ]);
 
       setTutorias(tData || []);
@@ -149,6 +152,8 @@ export const TutoriasPage = () => {
       setTutores(tutData || []);
       setCartas(cData || []);
       setEstudiantes(estData || []);
+      setTutoriasDisponibles(disponiblesData?.tutorias || []);
+      setPeriodoInscripcion(disponiblesData?.periodo || null);
 
       if (mData?.length > 0 && tutData?.length > 0) {
         let initialMateria = mData[0].id_materia;
@@ -201,6 +206,20 @@ export const TutoriasPage = () => {
       showSuccess('Solicitud de tutoría agendada con éxito');
       setIsSolicitudOpen(false);
       loadData();
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // Inscribirse en una tutoría disponible
+  const handleInscribir = async (idTutoria) => {
+    setFormLoading(true);
+    try {
+      await tutoriasService.inscribir(idTutoria);
+      showSuccess('Inscripción realizada correctamente');
+      await loadData();
     } catch (err) {
       showError(err.message);
     } finally {
@@ -587,6 +606,140 @@ export const TutoriasPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Tutorías disponibles para inscripción */}
+      {isEstudiante && (
+        <div className="card" style={{ marginBottom: '1.25rem', border: '1px solid var(--upds-blue)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+            <div>
+              <h3 style={{ margin: 0, color: 'var(--upds-blue-dark)' }}>
+                Tutorías disponibles para inscripción
+              </h3>
+              <p style={{ margin: '0.35rem 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                Selecciona una tutoría con cupo disponible para inscribirte.
+              </p>
+              {periodoInscripcion && (
+                <small style={{ color: 'var(--text-muted)' }}>
+                  Periodo: {periodoInscripcion.nombre} ({periodoInscripcion.fecha_inicio} al {periodoInscripcion.fecha_fin})
+                </small>
+              )}
+            </div>
+            <span
+              className="badge"
+              style={{
+                background: 'var(--upds-blue)',
+                color: '#fff',
+                padding: '0.4rem 0.75rem',
+                borderRadius: '20px'
+              }}
+            >
+              {tutoriasDisponibles.length} disponible(s)
+            </span>
+          </div>
+
+          {tutoriasDisponibles.length > 0 ? (
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Materia</th>
+                    <th>Docente Tutor</th>
+                    <th>Fecha y Horario</th>
+                    <th>Modalidad / Lugar</th>
+                    <th>Cupos</th>
+                    <th>Estado</th>
+                    <th style={{ textAlign: 'right' }}>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tutoriasDisponibles.map((t) => (
+                    <tr key={t.id_tutoria}>
+                      <td style={{ fontWeight: 600, color: 'var(--upds-blue-dark)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <BookOpen size={16} color="var(--upds-red)" />
+                          <span>{t.nombre_materia}</span>
+                        </div>
+                      </td>
+                      <td>
+                        Lic. {t.tutor_nombre} {t.tutor_apellido}
+                        <small style={{ display: 'block', color: 'var(--text-muted)' }}>
+                          {t.tutor_especialidad || 'Tutor UPDS'}
+                        </small>
+                      </td>
+                      <td>
+                        <div>{t.fecha}</div>
+                        <small style={{ color: 'var(--text-muted)' }}>
+                          {String(t.hora_inicio).slice(0, 5)} - {String(t.hora_fin).slice(0, 5)}
+                        </small>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {t.modalidad === 'virtual' ? (
+                            <Video size={15} color="var(--upds-blue)" />
+                          ) : (
+                            <MapPin size={15} color="var(--upds-red)" />
+                          )}
+                          <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>
+                            {t.modalidad}
+                          </span>
+                        </div>
+                        {t.lugar_o_enlace && (
+                          <small style={{ display: 'block', color: 'var(--text-muted)' }}>
+                            {t.lugar_o_enlace}
+                          </small>
+                        )}
+                      </td>
+                      <td>
+                        <strong>{t.cupos_disponibles}</strong> / {t.cupo_maximo}
+                        <small style={{ display: 'block', color: 'var(--text-muted)' }}>
+                          {t.cupos_ocupados} ocupado(s)
+                        </small>
+                      </td>
+                      <td>
+                        <StatusBadge status={t.estado} />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        {t.ya_inscrito ? (
+                          <span
+                            className="badge"
+                            style={{
+                              background: '#dcfce7',
+                              color: '#166534',
+                              padding: '0.4rem 0.7rem',
+                              borderRadius: '16px'
+                            }}
+                          >
+                            Ya inscrito
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => handleInscribir(t.id_tutoria)}
+                            disabled={formLoading || Number(t.cupos_disponibles) <= 0}
+                          >
+                            <Check size={14} />
+                            <span>{formLoading ? 'Procesando...' : 'Inscribirme'}</span>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+              <CalendarDays size={40} color="var(--upds-blue)" style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
+              <p style={{ margin: 0 }}>
+                {periodoInscripcion
+                  ? 'No hay tutorías con cupos disponibles en este momento.'
+                  : 'No existe un periodo de inscripción activo actualmente.'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Lista / Cards de Tutorías */}
       <div className="card">

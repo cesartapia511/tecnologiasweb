@@ -2,13 +2,23 @@ import api, { fixMojibake } from './api';
 
 export const authService = {
   login: async (usuario, contrasena) => {
-    const res = await api.post('/auth/login.php', { usuario, contrasena });
-    if (res.success && res.data) {
+    const res = await api.post('/auth/login.php', {
+      usuario,
+      contrasena,
+    });
+
+    if (res?.success && res?.data) {
       const cleaned = fixMojibake(res.data);
-      localStorage.setItem('upds_user', JSON.stringify(cleaned));
+
+      localStorage.setItem(
+        'upds_user',
+        JSON.stringify(cleaned)
+      );
+
       return cleaned;
     }
-    return res.data;
+
+    return res?.data || res;
   },
 
   logout: () => {
@@ -16,13 +26,21 @@ export const authService = {
   },
 
   register: async (userData) => {
-    const res = await api.post('/auth/register.php', userData);
+    const res = await api.post(
+      '/auth/register.php',
+      userData
+    );
+
     return res;
   },
 
   getCurrentUser: () => {
     const data = localStorage.getItem('upds_user');
-    if (!data) return null;
+
+    if (!data) {
+      return null;
+    }
+
     try {
       return fixMojibake(JSON.parse(data));
     } catch {
