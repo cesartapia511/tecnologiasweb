@@ -217,6 +217,44 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-sm);
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-menu-btn {
+  display: none !important; /* Oculto en PC */
+  padding: 6px !important;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.header-subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.header-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--upds-blue-dark);
+  line-height: 1.2;
+}
+
 .header-search {
   display: flex;
   align-items: center;
@@ -553,7 +591,8 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 580px;
   width: 100%;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-color);
   animation: slideUp 0.25s ease-out;
@@ -565,10 +604,13 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .modal-footer {
@@ -579,6 +621,26 @@ h1, h2, h3, h4, h5, h6 {
   gap: 0.75rem;
   background: #f8fafc;
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 1rem;
+    align-items: flex-end; /* Para que en móviles parezca un bottom sheet */
+  }
+  .modal-content {
+    max-height: 95vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    margin-bottom: -1rem; /* Compensa el padding de overlay */
+    padding-bottom: env(safe-area-inset-bottom, 1rem); /* iPhone safe area */
+  }
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+  .modal-footer .btn {
+    width: 100%;
+  }
 }
 
 /* Formularios */
@@ -873,5 +935,29 @@ select.form-control option {
     width: 90px;
     height: 90px;
     font-size: 0.62rem;
+  }
+  .header-menu-btn {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 0 1rem;
+    height: auto;
+    min-height: 70px;
+  }
+  .header-left {
+    gap: 0.5rem;
+  }
+  .header-subtitle {
+    display: none; /* Hide long subtitle on mobile */
+  }
+  .header-title {
+    font-size: 0.85rem;
+    white-space: normal; /* Allow text to wrap nicely if needed */
+  }
+  .header-logo {
+    height: 30px;
   }
 }

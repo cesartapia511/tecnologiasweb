@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export const Modal = ({ isOpen, onClose, title, children, maxWidth = '580px' }) => {
+export const Modal = ({ isOpen, onClose, title, children, footer, maxWidth = '580px' }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
@@ -38,6 +38,7 @@ export const Modal = ({ isOpen, onClose, title, children, maxWidth = '580px' }) 
           </button>
         </div>
         <div className="modal-body">{children}</div>
+        {footer && <div className="modal-footer">{footer}</div>}
       </div>
     </div>
   );

@@ -120,27 +120,26 @@ export const Header = ({ onToggleSidebar }) => {
 
   return (
     <header className="header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="header-left">
         <button
           onClick={onToggleSidebar}
-          className="btn btn-outline btn-sm"
-          style={{ display: 'inline-flex', padding: '6px' }}
+          className="btn btn-outline btn-sm header-menu-btn"
           title="Menú de navegación"
         >
           <Menu size={20} />
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="header-brand">
           <img
             src="/logo-upds-oficial.png"
             alt="Logo UPDS"
-            style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+            className="header-logo"
           />
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div className="header-text-container">
+            <div className="header-subtitle">
               Universidad Privada Domingo Savio &bull; Sede Tarija
             </div>
-            <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--upds-blue-dark)', lineHeight: 1.2 }}>
+            <div className="header-title">
               Sistema Institucional de Apoyo y Tutorías Académicas
             </div>
           </div>
