@@ -267,7 +267,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {/* Seguridad y Gestión del Sistema */}
         {(canAccess('usuarios') ||
           canAccess('roles') ||
-          canAccess('auditoria')) && (
+          canAccess('auditoria') ||
+          canAccess('periodos_inscripcion')) && (
           <>
             <div className="nav-section-title">
               Administración del Sistema
@@ -281,6 +282,17 @@ export const Sidebar = ({ isOpen, onClose }) => {
               >
                 <Users size={18} />
                 <span>Cuentas de Usuario</span>
+              </NavLink>
+            )}
+
+            {canAccess('periodos_inscripcion') && (
+              <NavLink
+                to="/periodos-inscripcion"
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                onClick={onClose}
+              >
+                <CalendarDays size={18} />
+                <span>Periodos de Inscripción</span>
               </NavLink>
             )}
 

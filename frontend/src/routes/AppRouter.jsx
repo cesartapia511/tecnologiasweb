@@ -19,6 +19,8 @@ import { EstudiantesPage } from '../pages/estudiantes/EstudiantesPage';
 import { RolesPage } from '../pages/roles/RolesPage';
 import { ReportesPage } from '../pages/reportes/ReportesPage';
 
+import { PeriodosInscripcionPage } from '../pages/admin/PeriodosInscripcion';
+
 import { MiPerfilPage } from '../pages/portal-estudiante/MiPerfilPage';
 import { PerfilTutor } from '../pages/tutores/PerfilTutor';
 
@@ -174,6 +176,15 @@ export const AppRouter = () => {
             element={
               <RoleGuard module="reportes">
                 <ReportesPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/periodos-inscripcion"
+            element={
+              <RoleGuard module="periodos_inscripcion">
+                <PeriodosInscripcionPage />
               </RoleGuard>
             }
           />

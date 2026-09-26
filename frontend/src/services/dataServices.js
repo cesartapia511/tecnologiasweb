@@ -105,3 +105,10 @@ export const informesService = {
   obtenerPorTutoria: async (id_tutoria) => (await api.get(`/informes_avance/index.php?id_tutoria=${id_tutoria}`)).data,
   crear: async (data) => await api.post('/informes_avance/index.php', data),
 };
+
+export const periodosInscripcionService = {
+  obtenerTodos: async () => (await api.get('/periodos_inscripcion/index.php')).data,
+  crear: async (data) => await api.post('/periodos_inscripcion/index.php', data),
+  activar: async (id_periodo) => await api.put('/periodos_inscripcion/index.php', { id_periodo, accion: 'activar' }),
+  desactivar: async (id_periodo) => await api.put('/periodos_inscripcion/index.php', { id_periodo, accion: 'desactivar' }),
+};
