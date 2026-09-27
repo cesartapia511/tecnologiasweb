@@ -13,6 +13,27 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
+const FacebookIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+  </svg>
+);
+
+const InstagramIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+);
+
+const YoutubeIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+  </svg>
+);
+
 const UPDS_CARRERAS_DEFAULT = [
   { id_carrera: 1, nombre_carrera: 'Ingeniería de Sistemas' },
   { id_carrera: 2, nombre_carrera: 'Ingeniería Comercial' },
@@ -313,19 +334,7 @@ export const LoginPage = () => {
         }
         
         .glass-bubble::after {
-          content: 'DOMINGO SAVIO UNIVERSIDAD PRIVADA';
-          position: absolute;
-          bottom: 35px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 150px;
-          text-align: center;
-          color: white !important;
-          font-size: 0.75rem;
-          font-weight: 700;
-          letter-spacing: 1px;
-          text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-          line-height: 1.3;
+          display: none;
         }
         
         .glass-card {
@@ -468,12 +477,34 @@ export const LoginPage = () => {
             left: 20px;
             gap: 15px !important;
           }
+          .header-titles {
+            display: none; /* Ocultar textos redundantes en celular */
+          }
           .header-logo-container {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
+            padding: 5px;
+          }
+          .glass-bubble {
+            display: none; /* Ocultar la burbuja gigante en celular para ahorrar espacio */
+          }
+          .glass-card-wrapper {
+            margin-top: 20px;
           }
           .glass-card {
-            padding: 100px 30px 40px 30px !important;
+            padding: 40px 25px 40px 25px !important; /* Quitar el padding gigante superior */
+          }
+          .social-icons-container {
+            top: 25px !important;
+            right: 20px !important;
+            gap: 10px !important;
+          }
+          .social-icons-container a {
+            padding: 8px !important;
+          }
+          .social-icons-container svg {
+            width: 16px;
+            height: 16px;
           }
         }
       `}</style>
@@ -701,6 +732,83 @@ export const LoginPage = () => {
 
           </div>
         </div>
+      </div>
+
+      {/* Redes Sociales - Esquina Superior Derecha */}
+      <div className="social-icons-container" style={{
+        position: 'fixed',
+        top: '40px',
+        right: '40px',
+        display: 'flex',
+        gap: '15px',
+        zIndex: 100
+      }}>
+        <a 
+          href="https://www.facebook.com/universidadprivadadomingosaviotarija/?utm_source=gemini" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '10px',
+            borderRadius: '50%',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = '#1877F2'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <FacebookIcon size={20} />
+        </a>
+        <a 
+          href="https://www.instagram.com/upds_tarija/?utm_source=gemini" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '10px',
+            borderRadius: '50%',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = '#E1306C'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <InstagramIcon size={20} />
+        </a>
+        <a 
+          href="https://www.youtube.com/@universidadprivadadomingos3411?utm_source=gemini" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '10px',
+            borderRadius: '50%',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = '#FF0000'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          <YoutubeIcon size={20} />
+        </a>
       </div>
     </>
   );
