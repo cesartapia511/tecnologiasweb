@@ -109,7 +109,7 @@ class UsuarioModel
                 $semestre = !empty($datos['semestre']) ? intval($datos['semestre']) : 1;
                 $ru = !empty($datos['registro_universitario']) 
                     ? trim($datos['registro_universitario']) 
-                    : 'RU-' . date('Y') . '-' . rand(10000, 99999);
+                    : 'RU-' . date('Y') . '-' . str_pad((string)$id_usuario, 4, '0', STR_PAD_LEFT);
 
                 $stmtEst = $this->pdo->prepare("INSERT INTO estudiantes (id_usuario, id_carrera, semestre, registro_universitario) VALUES (?, ?, ?, ?)");
                 $stmtEst->execute([$id_usuario, $id_carrera, $semestre, $ru]);

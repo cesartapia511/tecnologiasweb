@@ -415,6 +415,25 @@ if ($method === 'GET') {
 
         $pdo->commit();
 
+        // Notificar a los administradores del nuevo registro
+        require_once __DIR__ . '/../../models/NotificacionModel.php';
+        $notificacionModel = new NotificacionModel($pdo);
+        $stmtAdmins = $pdo->query('SELECT id_usuario FROM usuarios WHERE id_rol = 1');
+        
+        $rolNombre = 'usuario';
+        if ($id_rol === 1) $rolNombre = 'administrador';
+        if ($id_rol === 2) $rolNombre = 'tutor';
+        if ($id_rol === 3) $rolNombre = 'estudiante';
+
+        while ($admin = $stmtAdmins->fetch(PDO::FETCH_ASSOC)) {
+            $notificacionModel->crear(
+                $admin['id_usuario'],
+                'Nuevo Usuario Creado',
+                "Se ha creado un nuevo $rolNombre en el sistema desde el panel administrativo: $nombre $apellido ($correo).",
+                'info'
+            );
+        }
+
         jsonSuccess(
             [
                 'id_usuario' => $newId,

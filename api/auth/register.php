@@ -181,12 +181,26 @@ try {
         'biografia' => $input['biografia'] ?? '',
     ]);
 
+    // Notificar a los administradores del nuevo registro
+    require_once __DIR__ . '/../../models/NotificacionModel.php';
+    $notificacionModel = new NotificacionModel($pdo);
+    $stmtAdmins = $pdo->query('SELECT id_usuario FROM usuarios WHERE id_rol = 1');
+    $rolStr = $id_rol === 2 ? 'tutor' : 'estudiante';
+    while ($admin = $stmtAdmins->fetch(PDO::FETCH_ASSOC)) {
+        $notificacionModel->crear(
+            $admin['id_usuario'],
+            'Nuevo Usuario Registrado',
+            "Se ha registrado un nuevo $rolStr en el sistema: $nombre $apellido ($correo).",
+            'info'
+        );
+    }
+
     jsonSuccess(
         [
             'id_usuario' => (int)$id_usuario,
             'usuario' => $usuario,
             'correo' => $correo,
-            'nombre_rol' => $id_rol === 2 ? 'tutor' : 'estudiante',
+            'nombre_rol' => $rolStr,
         ],
         'Registro completado exitosamente. Ahora puedes iniciar sesión con tu cuenta.',
         201

@@ -1,4 +1,7 @@
 <?php
+// Configurar zona horaria de Bolivia para PHP
+date_default_timezone_set('America/La_Paz');
+
 $host = getenv('DB_HOST') ?: 'localhost';
 $db   = getenv('DB_NAME') ?: 'tutorias_db';
 $user = getenv('DB_USER') ?: 'tutorias_user';
@@ -16,6 +19,8 @@ $opciones = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $opciones);
     $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+    // Configurar zona horaria de Bolivia para la base de datos MySQL
+    $pdo->exec("SET time_zone = '-04:00'");
 } catch (PDOException $e) {
     die("Error de conexión a la base de datos: " . $e->getMessage());
 }
