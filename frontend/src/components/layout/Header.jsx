@@ -4,6 +4,7 @@ import { RoleBadge } from '../common/Badge';
 import { Menu, LogOut, User, ChevronDown, Check, Bell } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../context/ToastContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 export const Header = ({ onToggleSidebar }) => {
@@ -13,6 +14,7 @@ export const Header = ({ onToggleSidebar }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const notificationsRef = useRef(null);
+  const navigate = useNavigate();
 
   // Profile Edit State
   const [telefono, setTelefono] = useState(user?.telefono || '');
@@ -37,22 +39,58 @@ export const Header = ({ onToggleSidebar }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const dummyNotifications = (() => {
-    if (role === 'estudiante') {
-      return [
-        { id: 1, title: 'Tutoría Confirmada', text: 'Tu solicitud de tutoría ha sido confirmada.', time: 'Hace 2 horas', read: false },
-        { id: 2, title: 'Recordatorio', text: 'Tienes una sesión programada para hoy en el Turno Tarde.', time: 'Hace 5 horas', read: true }
-      ];
-    } else if (role === 'tutor') {
-      return [
-        { id: 1, title: 'Nueva Solicitud', text: 'Tienes una nueva solicitud de tutoría académica.', time: 'Hace 1 hora', read: false },
-        { id: 2, title: 'Carta de Designación', text: 'Tienes una nueva designación para revisión.', time: 'Hace 1 día', read: true }
-      ];
+  // Funcionalidad de notificaciones
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/notificaciones/index.php?limite=5');
+      if (res.success) {
+        setNotifications(res.data.notificaciones);
+        setUnreadCount(res.data.no_leidas);
+      }
+    } catch (error) {
+      console.error('Error al cargar notificaciones', error);
     }
-    return [
-      { id: 1, title: 'Alerta de Sistema', text: 'Nuevo usuario registrado exitosamente.', time: 'Hace 10 min', read: false }
-    ];
-  })();
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      // Polling cada 30 segundos para revisar nuevas notificaciones
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const handleMarkAllAsRead = async (e) => {
+    e.stopPropagation();
+    try {
+      await api.put('/notificaciones/index.php', { marcar_todas: true });
+      setNotifications(notifications.map(n => ({ ...n, leida: 1 })));
+      setUnreadCount(0);
+      showSuccess('Todas las notificaciones marcadas como leídas');
+    } catch (error) {
+      showError('Error al marcar notificaciones');
+    }
+  };
+
+  const handleMarkAsRead = async (id, isRead) => {
+    if (isRead) return;
+    try {
+      await api.put('/notificaciones/index.php', { id_notificacion: id });
+      setNotifications(notifications.map(n => n.id_notificacion === id ? { ...n, leida: 1 } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error al marcar como leída', error);
+    }
+  };
+
+  const handleViewAllNotifications = () => {
+    setNotificationsOpen(false);
+    navigate('/notificaciones');
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -166,17 +204,25 @@ export const Header = ({ onToggleSidebar }) => {
           >
             <div style={{ position: 'relative' }}>
               <Bell size={20} />
-              {dummyNotifications.some(n => !n.read) && (
+              {unreadCount > 0 && (
                 <span style={{
                   position: 'absolute',
                   top: '-2px',
                   right: '-2px',
-                  width: '8px',
-                  height: '8px',
+                  width: '12px',
+                  height: '12px',
                   backgroundColor: 'var(--upds-red)',
+                  color: 'white',
                   borderRadius: '50%',
+                  fontSize: '9px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
                   border: '2px solid white'
-                }}></span>
+                }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </div>
           </button>
@@ -192,7 +238,7 @@ export const Header = ({ onToggleSidebar }) => {
                 borderRadius: 'var(--radius-md)',
                 boxShadow: 'var(--shadow-xl)',
                 border: '1px solid var(--border-color)',
-                width: '300px',
+                width: '320px',
                 zIndex: 60,
                 overflow: 'hidden'
               }}
@@ -206,40 +252,59 @@ export const Header = ({ onToggleSidebar }) => {
                 backgroundColor: 'var(--bg-card)'
               }}>
                 <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.9rem' }}>Notificaciones</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--upds-blue)', cursor: 'pointer' }}>Marcar todas leídas</span>
+                <span 
+                  onClick={handleMarkAllAsRead}
+                  style={{ fontSize: '0.75rem', color: 'var(--upds-blue)', cursor: 'pointer' }}
+                >
+                  Marcar todas leídas
+                </span>
               </div>
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {dummyNotifications.map(notif => (
-                  <div key={notif.id} style={{
-                    padding: '12px 16px',
-                    borderBottom: '1px solid var(--border-color)',
-                    backgroundColor: notif.read ? 'transparent' : 'var(--upds-blue-subtle)',
-                    cursor: 'pointer',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-card)'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = notif.read ? 'transparent' : 'var(--upds-blue-subtle)'}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <strong style={{ fontSize: '0.85rem', color: 'var(--upds-blue-dark)' }}>{notif.title}</strong>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{notif.time}</span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
-                      {notif.text}
-                    </p>
+              <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    No tienes notificaciones
                   </div>
-                ))}
+                ) : (
+                  notifications.map(notif => (
+                    <div 
+                      key={notif.id_notificacion} 
+                      onClick={() => handleMarkAsRead(notif.id_notificacion, notif.leida)}
+                      style={{
+                        padding: '12px 16px',
+                        borderBottom: '1px solid var(--border-color)',
+                        backgroundColor: notif.leida ? 'transparent' : 'var(--upds-blue-subtle)',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-card)'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = notif.leida ? 'transparent' : 'var(--upds-blue-subtle)'}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <strong style={{ fontSize: '0.85rem', color: 'var(--upds-blue-dark)' }}>{notif.titulo}</strong>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          {new Date(notif.fecha_creacion).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                        {notif.mensaje}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
-              <div style={{ 
-                padding: '10px', 
-                textAlign: 'center', 
-                borderTop: '1px solid var(--border-color)',
-                fontSize: '0.8rem',
-                color: 'var(--upds-blue)',
-                cursor: 'pointer',
-                fontWeight: 500
-              }}>
-                Ver todas las notificaciones
+              <div 
+                onClick={handleViewAllNotifications}
+                style={{ 
+                  padding: '10px', 
+                  textAlign: 'center', 
+                  borderTop: '1px solid var(--border-color)',
+                  fontSize: '0.8rem',
+                  color: 'var(--upds-blue)',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                Ver centro de notificaciones
               </div>
             </div>
           )}

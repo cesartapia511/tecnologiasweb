@@ -30,6 +30,8 @@ import { MiCalendarioPage } from '../pages/portal-estudiante/MiCalendarioPage';
 import { MisEvaluacionesPage } from '../pages/portal-estudiante/MisEvaluacionesPage';
 import { MisEstudiantesTutorPage } from '../pages/tutores/MisEstudiantesTutorPage';
 
+import { NotificacionesPage } from '../pages/notificaciones/NotificacionesPage';
+
 export const AppRouter = () => {
   const { role } = useAuth();
 
@@ -52,6 +54,7 @@ export const AppRouter = () => {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/notificaciones" element={<NotificacionesPage />} />
 
           {/* Perfil según el rol */}
           <Route
