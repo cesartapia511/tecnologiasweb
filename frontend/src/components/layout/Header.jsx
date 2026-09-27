@@ -328,13 +328,13 @@ export const Header = ({ onToggleSidebar }) => {
             }}>
               {!user?.foto_perfil && (user?.nombre?.[0] || 'U')}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="user-profile-text" style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>
                 {user?.nombre} {user?.apellido}
               </span>
               <RoleBadge role={user?.nombre_rol} />
             </div>
-            <ChevronDown size={14} color="var(--text-muted)" />
+            <ChevronDown className="user-profile-icon" size={14} color="var(--text-muted)" />
           </div>
 
           {dropdownOpen && (

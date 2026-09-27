@@ -151,7 +151,7 @@ export const NotificacionesPage = () => {
                   {getIconForType(notif.tipo)}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                  <div className="notif-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                     <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--upds-blue-dark)' }}>{notif.titulo}</h4>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                       <Clock size={12} />

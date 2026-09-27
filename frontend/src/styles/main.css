@@ -951,13 +951,50 @@ select.form-control option {
     gap: 0.5rem;
   }
   .header-subtitle {
-    display: none; /* Hide long subtitle on mobile */
+    display: none;
   }
   .header-title {
-    font-size: 0.85rem;
-    white-space: normal; /* Allow text to wrap nicely if needed */
+    display: none; /* Hide entirely on mobile to save space */
   }
   .header-logo {
-    height: 30px;
+    height: 32px;
+  }
+  .user-profile-text, .user-profile-icon {
+    display: none !important; /* Hide user text and icon on mobile, show only avatar */
+  }
+  .user-profile-badge {
+    padding: 0.3rem !important;
+    gap: 0 !important;
+  }
+  .upds-banner {
+    padding: 1.5rem !important;
+    border-radius: var(--radius-lg);
+  }
+  .upds-banner h1 {
+    font-size: 1.8rem !important;
+  }
+  .upds-banner p {
+    font-size: 0.85rem !important;
+  }
+  
+  .main-content {
+    padding: 1rem !important;
+  }
+  .card {
+    padding: 1rem !important;
+  }
+  .card-header-clean {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .card-header-clean > button {
+    width: 100%;
+    justify-content: center;
+  }
+  .notif-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.25rem;
   }
 }
