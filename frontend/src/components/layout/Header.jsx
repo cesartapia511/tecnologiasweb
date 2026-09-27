@@ -4,7 +4,7 @@ import { RoleBadge } from '../common/Badge';
 import { Menu, LogOut, User, ChevronDown, Check, Bell } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useToast } from '../../context/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 
 export const Header = ({ onToggleSidebar }) => {
@@ -114,7 +114,7 @@ export const Header = ({ onToggleSidebar }) => {
           fd.append('foto', fotoFile);
           return fd;
         })(), { headers: { 'Content-Type': 'multipart/form-data' } });
-        fotoUrl = uploadRes.data.data.foto_perfil;
+        fotoUrl = uploadRes.data.foto_perfil;
       }
 
       await api.put(`/usuarios/detalle.php?id=${user.id_usuario}`, {
@@ -292,20 +292,23 @@ export const Header = ({ onToggleSidebar }) => {
                   ))
                 )}
               </div>
-              <div 
-                onClick={handleViewAllNotifications}
+              <Link 
+                to="/notificaciones"
+                onClick={() => setNotificationsOpen(false)}
                 style={{ 
+                  display: 'block',
                   padding: '10px', 
                   textAlign: 'center', 
                   borderTop: '1px solid var(--border-color)',
                   fontSize: '0.8rem',
                   color: 'var(--upds-blue)',
                   cursor: 'pointer',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  textDecoration: 'none'
                 }}
               >
                 Ver centro de notificaciones
-              </div>
+              </Link>
             </div>
           )}
         </div>
@@ -318,7 +321,7 @@ export const Header = ({ onToggleSidebar }) => {
             style={{ cursor: 'pointer' }}
           >
             <div className="user-avatar" style={{ 
-              backgroundImage: user?.foto_perfil ? `url(http://localhost:8000/uploads/perfiles/${user.foto_perfil})` : 'none', 
+              backgroundImage: user?.foto_perfil ? `url(/uploads/perfiles/${user.foto_perfil})` : 'none', 
               backgroundSize: 'cover', 
               backgroundPosition: 'center',
               color: user?.foto_perfil ? 'transparent' : 'white'
@@ -404,7 +407,7 @@ export const Header = ({ onToggleSidebar }) => {
                 width: '80px',
                 height: '80px',
                 borderRadius: '50%',
-                background: fotoPreview || (user?.foto_perfil ? `url(http://localhost:8000/uploads/perfiles/${user.foto_perfil})` : 'linear-gradient(135deg, var(--upds-portal-blue) 0%, var(--upds-red) 100%)'),
+                background: fotoPreview || (user?.foto_perfil ? `url(/uploads/perfiles/${user.foto_perfil})` : 'linear-gradient(135deg, var(--upds-portal-blue) 0%, var(--upds-red) 100%)'),
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 color: (fotoPreview || user?.foto_perfil) ? 'transparent' : 'white',

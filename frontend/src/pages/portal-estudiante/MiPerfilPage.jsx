@@ -203,7 +203,7 @@ const PerfilEstudiante = () => {
                   fotoPreview ||
                   (
                     perfil.foto_perfil
-                      ? `url(http://localhost:8000/uploads/perfiles/${perfil.foto_perfil})`
+                      ? `url(/uploads/perfiles/${perfil.foto_perfil})`
                       : 'var(--upds-blue)'
                   ),
                 backgroundSize: 'cover',

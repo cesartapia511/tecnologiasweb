@@ -20,6 +20,7 @@ export const NotificacionesPage = () => {
         setNotificaciones(res.data.notificaciones);
       }
     } catch (error) {
+      console.error("NOTIF PAGE ERROR:", error);
       showError('Error al cargar el historial de notificaciones');
     } finally {
       setLoading(false);
