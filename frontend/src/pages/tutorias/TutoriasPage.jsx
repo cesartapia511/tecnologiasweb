@@ -481,8 +481,8 @@ export const TutoriasPage = () => {
     return { texto: 'En plazo', color: 'var(--upds-blue)' };
   };
 
-  // Lógica de filtrado combinado
-  const filteredTutorias = tutorias.filter(t => {
+  // Función para aplicar filtros comunes
+  const aplicarFiltros = (t) => {
     // Filtro por Estado
     if (filtroEstado !== 'todas' && t.estado !== filtroEstado) return false;
     if (selectedFecha && t.fecha !== selectedFecha) return false;
@@ -492,12 +492,16 @@ export const TutoriasPage = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       const matchMateria = t.nombre_materia?.toLowerCase().includes(term);
-      const matchEstudiante = (t.estudiante_nombre + ' ' + t.estudiante_apellido).toLowerCase().includes(term);
-      const matchTutor = (t.tutor_nombre + ' ' + t.tutor_apellido).toLowerCase().includes(term);
+      const matchEstudiante = t.estudiante_nombre ? (t.estudiante_nombre + ' ' + t.estudiante_apellido).toLowerCase().includes(term) : false;
+      const matchTutor = t.tutor_nombre ? (t.tutor_nombre + ' ' + t.tutor_apellido).toLowerCase().includes(term) : false;
       return matchMateria || matchEstudiante || matchTutor;
     }
     return true;
-  });
+  };
+
+  // Lógica de filtrado combinado
+  const filteredTutorias = tutorias.filter(aplicarFiltros);
+  const filteredTutoriasDisponibles = tutoriasDisponibles.filter(aplicarFiltros);
 
   return (
     <div>
@@ -633,11 +637,11 @@ export const TutoriasPage = () => {
                 borderRadius: '20px'
               }}
             >
-              {tutoriasDisponibles.length} disponible(s)
+              {filteredTutoriasDisponibles.length} disponible(s)
             </span>
           </div>
 
-          {tutoriasDisponibles.length > 0 ? (
+          {filteredTutoriasDisponibles.length > 0 ? (
             <div className="table-responsive">
               <table className="data-table">
                 <thead>
@@ -652,7 +656,7 @@ export const TutoriasPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {tutoriasDisponibles.map((t) => (
+                  {filteredTutoriasDisponibles.map((t) => (
                     <tr key={t.id_tutoria}>
                       <td style={{ fontWeight: 600, color: 'var(--upds-blue-dark)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
