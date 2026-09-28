@@ -56,21 +56,39 @@ if (!file_exists($htaccessPath)) {
 $filename = 'avatar_' . $id_usuario . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
 $targetPath = $uploadDir . $filename;
 
-// Si el usuario ya tenía foto, intentar borrarla
+// Obtener la foto antigua para borrarla luego
 $stmtGet = $pdo->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
 $stmtGet->execute([$id_usuario]);
 $oldFoto = $stmtGet->fetchColumn();
 
-if ($oldFoto && file_exists($uploadDir . $oldFoto)) {
-    unlink($uploadDir . $oldFoto);
-}
-
+// Intentar guardar el nuevo archivo físicamente
 if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
     jsonError('Error al guardar el archivo', 500, 'No se pudo mover la imagen al directorio destino.');
 }
 
-// Actualizar BD
-$stmtUpdate = $pdo->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id_usuario = ?");
-$stmtUpdate->execute([$filename, $id_usuario]);
+try {
+    // Actualizar BD
+    $stmtUpdate = $pdo->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id_usuario = ?");
+    $dbSuccess = $stmtUpdate->execute([$filename, $id_usuario]);
+
+    if (!$dbSuccess) {
+        throw new Exception("Error al actualizar la base de datos.");
+    }
+
+    // Sólo eliminar la foto antigua si todo lo nuevo tuvo éxito
+    if ($oldFoto && $oldFoto !== $filename) {
+        $oldFilePath = $uploadDir . $oldFoto;
+        // Evitar manipulación: asegurarse de que el nombre del archivo no esté vacío y no contenga paths
+        if (!empty($oldFoto) && basename($oldFoto) === $oldFoto && file_exists($oldFilePath)) {
+            unlink($oldFilePath);
+        }
+    }
+} catch (Exception $e) {
+    // Si la DB falla, el nuevo archivo queda huérfano, así que lo eliminamos
+    if (file_exists($targetPath)) {
+        unlink($targetPath);
+    }
+    jsonError('Error de servidor', 500, 'Error al guardar la fotografía en base de datos.');
+}
 
 jsonSuccess(['foto_perfil' => $filename], 'Fotografía actualizada correctamente.');

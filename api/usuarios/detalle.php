@@ -39,7 +39,7 @@ if ($method === 'GET') {
     }
 
     $data = getJsonInput();
-    
+
     // Si es el mismo usuario editando su perfil desde el Header, conserva su rol y estado
     $id_rol   = ($tienePermisoEditar && isset($data['id_rol'])) ? (int)$data['id_rol'] : (int)$usuarioExistente['id_rol'];
     $nombre   = trim($data['nombre'] ?? $usuarioExistente['nombre']);
@@ -74,7 +74,7 @@ if ($method === 'GET') {
         if (mb_strlen($clave) < 6) {
             $errores['clave'] = 'La nueva contraseña debe tener al menos 6 caracteres.';
         }
-        
+
         // Si no es admin editando a otro, exigimos la contraseña actual
         if ($esMismoUsuario) {
             if (empty($contrasena_actual)) {
@@ -108,7 +108,7 @@ if ($method === 'GET') {
 
     try {
         $stmt = $pdo->prepare("
-            UPDATE usuarios 
+            UPDATE usuarios
             SET id_rol = :id_rol, nombre = :nombre, apellido = :apellido,
                 correo = :correo, usuario = :usuario, telefono = :telefono, estado = :estado
             WHERE id_usuario = :id
@@ -175,7 +175,18 @@ if ($method === 'GET') {
     }
 
     try {
+        $foto_perfil = $usuario['foto_perfil'];
+
         $model->eliminar($id);
+
+        // Si se eliminó correctamente de la BD y tenía foto, eliminar el archivo físico
+        if (!empty($foto_perfil) && basename($foto_perfil) === $foto_perfil) {
+            $pathFoto = __DIR__ . '/../../uploads/perfiles/' . $foto_perfil;
+            if (file_exists($pathFoto)) {
+                unlink($pathFoto);
+            }
+        }
+
         jsonSuccess(['id_usuario' => $id], 'Usuario eliminado correctamente del sistema');
     } catch (PDOException $e) {
         jsonError('No se pudo eliminar el usuario', 500, 'Error de clave foránea o integridad referencial: ' . $e->getMessage());
