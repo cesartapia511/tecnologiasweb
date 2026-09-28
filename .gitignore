@@ -1,3 +1,4 @@
 uploads/perfiles/*
 !uploads/perfiles/.gitkeep
 !uploads/perfiles/.htaccess
+.env

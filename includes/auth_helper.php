@@ -8,7 +8,17 @@
 require_once __DIR__ . '/../config/conexion.php';
 require_once __DIR__ . '/../models/PermisoModel.php';
 
-const AUTH_SECRET_KEY = 'UPDS_TARIJA_TUTORIAS_SECRET_KEY_2026';
+$authSecret = getenv('AUTH_SECRET_KEY');
+if (empty($authSecret)) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Error de configuración del servidor: AUTH_SECRET_KEY no definida.']);
+    exit;
+}
+define('AUTH_SECRET_KEY', $authSecret);
+
+$authTtl = getenv('AUTH_TOKEN_TTL');
+define('AUTH_TOKEN_TTL', $authTtl !== false ? (int)$authTtl : 86400);
 
 /**
  * Obtener el token Bearer del encabezado HTTP de la petición
@@ -120,33 +130,30 @@ function decodificarToken($token)
 
                 if (
                     is_array($decoded) &&
-                    isset($decoded['id_usuario'])
+                    isset($decoded['id_usuario']) &&
+                    isset($decoded['timestamp']) &&
+                    is_numeric($decoded['timestamp'])
                 ) {
+                    $tokenTime = (int) $decoded['timestamp'];
+                    $currentTime = time();
+
+                    // Rechazar tokens futuros anómalos (margen de 5 minutos)
+                    if ($tokenTime > $currentTime + 300) {
+                        return null;
+                    }
+
+                    // Rechazar tokens expirados
+                    if (($currentTime - $tokenTime) > AUTH_TOKEN_TTL) {
+                        return null;
+                    }
+
                     return (int) $decoded['id_usuario'];
                 }
             }
         }
     }
 
-    // Compatibilidad con formato anterior:
-    // base64("id:usuario:timestamp")
-    $decodedRaw = base64_decode($token, true);
-
-    if (
-        $decodedRaw &&
-        strpos($decodedRaw, ':') !== false
-    ) {
-
-        $partes = explode(':', $decodedRaw);
-
-        if (
-            count($partes) >= 2 &&
-            is_numeric($partes[0])
-        ) {
-            return (int) $partes[0];
-        }
-    }
-
+    // Token mal formado, expirado, futuro anómalo, o con firma inválida
     return null;
 }
 

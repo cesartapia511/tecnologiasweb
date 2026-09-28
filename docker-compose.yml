@@ -12,6 +12,8 @@ services:
       - DB_NAME=tutorias_db
       - DB_USER=tutorias_user
       - DB_PASS=12345
+      - AUTH_SECRET_KEY=${AUTH_SECRET_KEY}
+      - AUTH_TOKEN_TTL=${AUTH_TOKEN_TTL:-86400}
     depends_on:
       - db
 

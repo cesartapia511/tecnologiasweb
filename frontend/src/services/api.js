@@ -83,6 +83,22 @@ api.interceptors.response.use(
     return fixMojibake(response.data);
   },
   (error) => {
+    // Si obtenemos un 401 (No autorizado) y la petición NO era para iniciar sesión
+    if (error.response?.status === 401) {
+      const url = error.config?.url || '';
+
+      // Evitar redirigir o borrar datos si el usuario simplemente se equivocó en el login
+      if (!url.includes('/auth/login.php')) {
+        // Limpiar sesión
+        localStorage.removeItem('upds_user');
+
+        // Redirigir al login si no estamos ya en esa página
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
+    }
+
     const message =
       error.response?.data?.message ||
       error.message ||
