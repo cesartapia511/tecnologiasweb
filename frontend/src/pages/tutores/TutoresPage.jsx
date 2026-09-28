@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { tutoresService, materiasService } from '../../services/dataServices';
+import { tutoresService, materiasService, solicitudesMateriasService } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { StatusBadge } from '../../components/common/Badge';
@@ -23,6 +23,8 @@ export const TutoresPage = () => {
   const [editingTutor, setEditingTutor] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
+  const [todasSolicitudes, setTodasSolicitudes] = useState([]);
+  const [activeTab, setActiveTab] = useState('directorio');
 
   const [formData, setFormData] = useState({
     especialidad: '',
@@ -37,13 +39,15 @@ export const TutoresPage = () => {
     setLoading(true);
 
     try {
-      const [tData, mData] = await Promise.all([
+      const [tData, mData, sData] = await Promise.all([
         tutoresService.getAll(),
         materiasService.getAll(),
+        isAdmin ? solicitudesMateriasService.getAll() : Promise.resolve([]),
       ]);
 
       setTutores(tData || []);
       setMaterias(mData || []);
+      setTodasSolicitudes(sData || []);
     } catch (err) {
       showError(err.message);
     } finally {
@@ -147,7 +151,33 @@ export const TutoresPage = () => {
           </p>
         </div>
       </div>
+      
+      {isAdmin && (
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+          <button 
+            className={`btn ${activeTab === 'directorio' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ borderRadius: 'var(--radius-md) var(--radius-md) 0 0', borderBottom: 'none' }}
+            onClick={() => setActiveTab('directorio')}
+          >
+            Directorio
+          </button>
+          <button 
+            className={`btn ${activeTab === 'solicitudes' ? 'btn-primary' : 'btn-outline'}`}
+            style={{ borderRadius: 'var(--radius-md) var(--radius-md) 0 0', borderBottom: 'none' }}
+            onClick={() => setActiveTab('solicitudes')}
+          >
+            Solicitudes de Materias
+            {todasSolicitudes.filter(s => s.estado === 'pendiente').length > 0 && (
+              <span className="badge badge-danger" style={{ marginLeft: '8px', background: 'var(--upds-red)', color: 'white' }}>
+                {todasSolicitudes.filter(s => s.estado === 'pendiente').length}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
 
+      {activeTab === 'directorio' && (
+      <>
       {/* Filtros */}
       <div
         className="card"
@@ -236,9 +266,7 @@ export const TutoresPage = () => {
           }}
         >
           {filteredTutores.map((t) => {
-            const canEditThis =
-              isAdmin ||
-              (isDocente && user?.id_tutor === t.id_tutor);
+            const canEditThis = isAdmin;
 
             return (
               <div
@@ -591,6 +619,83 @@ export const TutoresPage = () => {
           </div>
         </form>
       </Modal>
+      </>
+      )}
+
+      {activeTab === 'solicitudes' && isAdmin && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Tutor</th>
+                <th>Materia</th>
+                <th>Fecha Solicitud</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {todasSolicitudes.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                    No hay solicitudes registradas
+                  </td>
+                </tr>
+              ) : (
+                todasSolicitudes.map(sol => (
+                  <tr key={sol.id_solicitud}>
+                    <td>Lic. {sol.tutor_nombres} {sol.tutor_apellidos}</td>
+                    <td>{sol.nombre_materia} ({sol.nombre_carrera || 'General'})</td>
+                    <td>{new Date(sol.fecha_solicitud).toLocaleDateString()}</td>
+                    <td>
+                      <StatusBadge status={sol.estado === 'aprobada' ? 'realizada' : (sol.estado === 'rechazada' ? 'cancelada' : 'pendiente')} />
+                    </td>
+                    <td>
+                      {sol.estado === 'pendiente' ? (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="btn btn-primary btn-sm"
+                            onClick={async () => {
+                              try {
+                                await solicitudesMateriasService.resolve(sol.id_solicitud, 'aprobada');
+                                showSuccess('Solicitud aprobada');
+                                loadData();
+                              } catch (e) {
+                                showError(e.response?.data?.mensaje || 'Error al aprobar');
+                              }
+                            }}
+                          >
+                            Aprobar
+                          </button>
+                          <button 
+                            className="btn btn-outline btn-sm"
+                            style={{ color: 'var(--upds-red)', borderColor: 'var(--upds-red)' }}
+                            onClick={async () => {
+                              try {
+                                await solicitudesMateriasService.resolve(sol.id_solicitud, 'rechazada');
+                                showSuccess('Solicitud rechazada');
+                                loadData();
+                              } catch (e) {
+                                showError(e.response?.data?.mensaje || 'Error al rechazar');
+                              }
+                            }}
+                          >
+                            Rechazar
+                          </button>
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                          Resuelta el {sol.fecha_resolucion ? new Date(sol.fecha_resolucion).toLocaleDateString() : '-'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

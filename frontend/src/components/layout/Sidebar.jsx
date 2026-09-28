@@ -191,16 +191,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </>
         )}
 
-        {canAccess('disponibilidad') && (
-          <NavLink
-            to="/disponibilidad"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-            onClick={onClose}
-          >
-            <CalendarClock size={18} />
-            <span>Horarios de Atención</span>
-          </NavLink>
-        )}
 
         {canAccess('tutores') && (
           <NavLink

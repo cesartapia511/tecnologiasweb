@@ -59,6 +59,12 @@ export const tutoresService = {
     await api.put('/tutores/index.php', data),
 };
 
+export const solicitudesMateriasService = {
+  getAll: async () => (await api.get('/tutores/solicitudes.php')).data,
+  create: async (id_materia) => await api.post('/tutores/solicitudes.php', { id_materia }),
+  resolve: async (id_solicitud, estado) => await api.put('/tutores/solicitudes.php', { id_solicitud, estado })
+};
+
 export const estudiantesService = {
   getAll: async () =>
     (await api.get('/estudiantes/index.php')).data,

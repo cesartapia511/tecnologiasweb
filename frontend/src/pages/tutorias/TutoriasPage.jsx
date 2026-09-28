@@ -103,6 +103,7 @@ export const TutoriasPage = () => {
 
   // Form Solicitud (Estudiante)
   const [solicitudData, setSolicitudData] = useState({
+    id_estudiante: '',
     id_materia: '',
     id_tutor: '',
     fecha: '',
@@ -186,14 +187,18 @@ export const TutoriasPage = () => {
   // Crear Solicitud
   const handleSolicitar = async (e) => {
     e.preventDefault();
-    if (!user?.id_estudiante) {
+    if (!isAdmin && !user?.id_estudiante) {
       showError('Tu cuenta debe tener perfil de estudiante para agendar');
+      return;
+    }
+    if (isAdmin && !solicitudData.id_estudiante) {
+      showError('Debe seleccionar un estudiante para la tutoría');
       return;
     }
     setFormLoading(true);
     try {
       await tutoriasService.create({
-        id_estudiante: user.id_estudiante,
+        id_estudiante: isAdmin ? solicitudData.id_estudiante : user.id_estudiante,
         id_tutor: solicitudData.id_tutor,
         id_materia: solicitudData.id_materia,
         fecha: solicitudData.fecha,
@@ -1155,6 +1160,25 @@ export const TutoriasPage = () => {
       {/* Modal Solicitar Tutoría (Estudiante) */}
       <Modal isOpen={isSolicitudOpen} onClose={() => setIsSolicitudOpen(false)} title="Solicitar Nueva Tutoría Académica">
         <form onSubmit={handleSolicitar}>
+          {isAdmin && (
+            <div className="form-group">
+              <label className="form-label">Estudiante Solicitante</label>
+              <select
+                className="form-control"
+                value={solicitudData.id_estudiante}
+                onChange={(e) => setSolicitudData({ ...solicitudData, id_estudiante: e.target.value })}
+                required
+              >
+                <option value="">Seleccione un estudiante</option>
+                {estudiantes.map(est => (
+                  <option key={est.id_estudiante} value={est.id_estudiante}>
+                    {est.nombre} {est.apellido} - {est.correo}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label">Asignatura que deseas reforzar</label>
             <select

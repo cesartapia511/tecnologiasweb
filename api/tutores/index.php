@@ -154,99 +154,103 @@ elseif ($method === 'PUT') {
      * =====================================================
      */
 
-    $materias_ids = $data['materias_ids'] ?? [];
+    $materiasNormalizadas = null;
 
-    if (!is_array($materias_ids)) {
-        jsonError(
-            'Materias inválidas',
-            400,
-            'Las materias deben enviarse como una lista de identificadores.'
-        );
-    }
+    if ($usuarioAuth['rol'] !== 'tutor' && isset($data['materias_ids'])) {
+        $materias_ids = $data['materias_ids'];
 
-    /*
-     * Convertir IDs a enteros y eliminar duplicados.
-     */
-    $materiasNormalizadas = [];
-
-    foreach ($materias_ids as $materiaId) {
-
-        if (
-            !is_int($materiaId) &&
-            !is_numeric($materiaId)
-        ) {
+        if (!is_array($materias_ids)) {
             jsonError(
-                'ID de materia inválido',
+                'Materias inválidas',
                 400,
-                'Todos los identificadores de materia deben ser numéricos.'
+                'Las materias deben enviarse como una lista de identificadores.'
             );
         }
 
-        $materiaId = (int) $materiaId;
+        /*
+         * Convertir IDs a enteros y eliminar duplicados.
+         */
+        $materiasNormalizadas = [];
 
-        if ($materiaId <= 0) {
-            jsonError(
-                'ID de materia inválido',
-                400,
-                'Los identificadores de materia deben ser mayores que cero.'
-            );
+        foreach ($materias_ids as $materiaId) {
+
+            if (
+                !is_int($materiaId) &&
+                !is_numeric($materiaId)
+            ) {
+                jsonError(
+                    'ID de materia inválido',
+                    400,
+                    'Todos los identificadores de materia deben ser numéricos.'
+                );
+            }
+
+            $materiaId = (int) $materiaId;
+
+            if ($materiaId <= 0) {
+                jsonError(
+                    'ID de materia inválido',
+                    400,
+                    'Los identificadores de materia deben ser mayores que cero.'
+                );
+            }
+
+            $materiasNormalizadas[] = $materiaId;
         }
 
-        $materiasNormalizadas[] = $materiaId;
-    }
-
-    $materiasNormalizadas = array_values(
-        array_unique($materiasNormalizadas)
-    );
-
-    /*
-     * Verificar que todas las materias existan.
-     */
-    if (!empty($materiasNormalizadas)) {
-
-        $placeholders = implode(
-            ',',
-            array_fill(
-                0,
-                count($materiasNormalizadas),
-                '?'
-            )
+        $materiasNormalizadas = array_values(
+            array_unique($materiasNormalizadas)
         );
 
-        $stmtMaterias = $pdo->prepare("
-            SELECT id_materia
-            FROM materias
-            WHERE id_materia IN ($placeholders)
-        ");
+        /*
+         * Verificar que todas las materias existan.
+         */
+        if (!empty($materiasNormalizadas)) {
 
-        $stmtMaterias->execute(
-            $materiasNormalizadas
-        );
-
-        $materiasExistentes = array_map(
-            'intval',
-            $stmtMaterias->fetchAll(
-                PDO::FETCH_COLUMN
-            )
-        );
-
-        $materiasNoExistentes = array_diff(
-            $materiasNormalizadas,
-            $materiasExistentes
-        );
-
-        if (!empty($materiasNoExistentes)) {
-
-            jsonError(
-                'Materia inexistente',
-                404,
-                'Una o más materias seleccionadas no existen en la base de datos.',
-                [
-                    'materias_invalidas' => array_values(
-                        $materiasNoExistentes
-                    )
-                ]
+            $placeholders = implode(
+                ',',
+                array_fill(
+                    0,
+                    count($materiasNormalizadas),
+                    '?'
+                )
             );
+
+            $stmtMaterias = $pdo->prepare("
+                SELECT id_materia
+                FROM materias
+                WHERE id_materia IN ($placeholders)
+            ");
+
+            $stmtMaterias->execute(
+                $materiasNormalizadas
+            );
+
+            $materiasExistentes = array_map(
+                'intval',
+                $stmtMaterias->fetchAll(
+                    PDO::FETCH_COLUMN
+                )
+            );
+
+            $materiasNoExistentes = array_diff(
+                $materiasNormalizadas,
+                $materiasExistentes
+            );
+
+            if (!empty($materiasNoExistentes)) {
+
+                jsonError(
+                    'Materia inexistente',
+                    404,
+                    'Una o más materias seleccionadas no existen en la base de datos.',
+                    [
+                        'materias_invalidas' => array_values(
+                            $materiasNoExistentes
+                        )
+                    ]
+                );
+            }
         }
     }
 
@@ -257,23 +261,23 @@ elseif ($method === 'PUT') {
      */
 
     try {
+        $updateData = [
+            'especialidad' => $especialidad,
+            'biografia' => $biografia
+        ];
+
+        if ($materiasNormalizadas !== null) {
+            $updateData['materias_ids'] = $materiasNormalizadas;
+        }
 
         $model->actualizar(
             $id_tutor,
-            [
-                'especialidad' => $especialidad,
-                'biografia' => $biografia,
-                'materias_ids' => $materiasNormalizadas
-            ]
+            $updateData
         );
 
         jsonSuccess(
-            [
-                'id_tutor' => $id_tutor,
-                'especialidad' => $especialidad,
-                'materias_ids' => $materiasNormalizadas
-            ],
-            'Perfil y asignaturas del tutor actualizados correctamente'
+            $updateData,
+            'Perfil del tutor actualizado correctamente'
         );
 
     } catch (PDOException $e) {

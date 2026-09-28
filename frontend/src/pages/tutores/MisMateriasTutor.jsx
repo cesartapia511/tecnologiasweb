@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { tutoresService, tutoriasService } from '../../services/dataServices';
-import { BookOpen, Users, CalendarDays, BarChart2 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { tutoresService, tutoriasService, solicitudesMateriasService, materiasService } from '../../services/dataServices';
+import { BookOpen, Users, CalendarDays, BarChart2, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const MisMateriasTutor = () => {
   const { user } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [materiasData, setMateriasData] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [todasMaterias, setTodasMaterias] = useState([]);
+  const [selectedMateria, setSelectedMateria] = useState('');
+  const [requesting, setRequesting] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadMateriasYEstadisticas = async () => {
-      setLoading(true);
-      try {
+  const loadData = async () => {
+    setLoading(true);
+    try {
         // 1. Obtener el perfil del tutor (que contiene sus materias asignadas)
         const tutores = await tutoresService.getAll();
         const miPerfil = tutores.find(t => t.id_tutor === user?.id_tutor);
@@ -36,6 +41,18 @@ export const MisMateriasTutor = () => {
             estudiantes_atendidos: estudiantesUnicos.size
           };
         });
+        // 4. Fetch solicitudes
+        const misSolicitudes = await solicitudesMateriasService.getAll();
+        setSolicitudes(misSolicitudes);
+
+        // 5. Fetch todas las materias para el select
+        const allMaterias = await materiasService.getAll();
+        
+        // Filtramos las materias que ya tiene asignadas
+        const materiasDisponibles = allMaterias.filter(
+          m => !misMaterias.some(asignada => asignada.id_materia === m.id_materia)
+        );
+        setTodasMaterias(materiasDisponibles);
 
         setMateriasData(datosCruzados);
       } catch (error) {
@@ -43,12 +60,30 @@ export const MisMateriasTutor = () => {
       } finally {
         setLoading(false);
       }
-    };
-    
+  };
+
+  useEffect(() => {
     if (user?.id_tutor) {
-      loadMateriasYEstadisticas();
+      loadData();
     }
   }, [user]);
+
+  const handleRequestMateria = async (e) => {
+    e.preventDefault();
+    if (!selectedMateria) return;
+    
+    setRequesting(true);
+    try {
+      await solicitudesMateriasService.create(selectedMateria);
+      showSuccess('Solicitud enviada correctamente');
+      setSelectedMateria('');
+      loadData(); // recargar
+    } catch (err) {
+      showError(err.response?.data?.mensaje || err.message);
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -67,21 +102,15 @@ export const MisMateriasTutor = () => {
             Resumen de las asignaturas que impartes y tus estadísticas de atención por materia.
           </p>
         </div>
-        <Link to="/mi-perfil" className="btn btn-outline">
-          Editar Materias Asignadas
-        </Link>
       </div>
 
       {materiasData.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '3.5rem' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '3.5rem', marginBottom: '2rem' }}>
           <BookOpen size={48} color="var(--upds-blue)" style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
           <h3>No tienes materias asignadas</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-            Aún no has registrado las asignaturas en las que brindas tutorías.
+          <p style={{ color: 'var(--text-muted)' }}>
+            Las materias son asignadas exclusivamente por la administración. Puedes enviar una solicitud en la parte inferior o contactar a tu coordinador.
           </p>
-          <Link to="/mi-perfil" className="btn btn-primary">
-            Asignar Materias Ahora
-          </Link>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
@@ -145,6 +174,69 @@ export const MisMateriasTutor = () => {
           ))}
         </div>
       )}
+
+      {/* SECCIÓN DE SOLICITUDES DE MATERIAS */}
+      <div style={{ marginTop: '3rem' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-color)' }}>
+          Solicitudes de Materias
+        </h2>
+
+        <div className="card" style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Solicitar Nueva Materia</h3>
+          <form onSubmit={handleRequestMateria} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label className="form-label">Selecciona una materia</label>
+              <select 
+                className="form-control" 
+                value={selectedMateria} 
+                onChange={(e) => setSelectedMateria(e.target.value)}
+                required
+              >
+                <option value="">-- Elige una materia --</option>
+                {todasMaterias.map(m => (
+                  <option key={m.id_materia} value={m.id_materia}>
+                    {m.nombre_materia} ({m.nombre_carrera || 'General'})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={requesting || !selectedMateria}>
+              {requesting ? 'Enviando...' : 'Enviar Solicitud'}
+            </button>
+          </form>
+        </div>
+
+        {solicitudes.length > 0 && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Materia</th>
+                  <th>Fecha de Solicitud</th>
+                  <th>Estado</th>
+                  <th>Fecha de Resolución</th>
+                </tr>
+              </thead>
+              <tbody>
+                {solicitudes.map(sol => (
+                  <tr key={sol.id_solicitud}>
+                    <td style={{ fontWeight: 500 }}>{sol.nombre_materia}</td>
+                    <td>{new Date(sol.fecha_solicitud).toLocaleDateString()}</td>
+                    <td>
+                      {sol.estado === 'pendiente' && <span style={{ color: 'var(--upds-gold)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={16}/> Pendiente</span>}
+                      {sol.estado === 'aprobada' && <span style={{ color: 'var(--upds-blue)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><CheckCircle size={16}/> Aprobada</span>}
+                      {sol.estado === 'rechazada' && <span style={{ color: 'var(--upds-red)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><XCircle size={16}/> Rechazada</span>}
+                    </td>
+                    <td style={{ color: 'var(--text-muted)' }}>
+                      {sol.fecha_resolucion ? new Date(sol.fecha_resolucion).toLocaleDateString() : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

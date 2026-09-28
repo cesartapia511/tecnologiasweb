@@ -11,7 +11,7 @@ import { UsuariosPage } from '../pages/usuarios/UsuariosPage';
 import { CarrerasPage } from '../pages/carreras/CarrerasPage';
 import { MateriasPage } from '../pages/materias/MateriasPage';
 import { TutoresPage } from '../pages/tutores/TutoresPage';
-import { DisponibilidadPage } from '../pages/disponibilidad/DisponibilidadPage';
+
 import { TutoriasPage } from '../pages/tutorias/TutoriasPage';
 import { EvaluacionesPage } from '../pages/evaluaciones/EvaluacionesPage';
 import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
@@ -92,15 +92,6 @@ export const AppRouter = () => {
             element={<TutoriasPage />}
           />
 
-          {/* Disponibilidad docente */}
-          <Route
-            path="/disponibilidad"
-            element={
-              <RoleGuard module="disponibilidad">
-                <DisponibilidadPage />
-              </RoleGuard>
-            }
-          />
 
           {/* Docentes y Estudiantes */}
           <Route
