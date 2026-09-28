@@ -2,10 +2,15 @@
 // Configurar zona horaria de Bolivia para PHP
 date_default_timezone_set('America/La_Paz');
 
-$host = getenv('DB_HOST') ?: 'localhost';
-$db   = getenv('DB_NAME') ?: 'tutorias_db';
-$user = getenv('DB_USER') ?: 'tutorias_user';
-$pass = getenv('DB_PASS') ?: '12345';
+$host = getenv('DB_HOST');
+$db   = getenv('DB_NAME');
+$user = getenv('DB_USER');
+$pass = getenv('DB_PASS');
+
+if (!$host || !$db || !$user || !$pass) {
+    die("Error interno: Configuración de base de datos incompleta.");
+}
+
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
