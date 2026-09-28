@@ -57,19 +57,6 @@ function getBearerToken()
         return $matches[1];
     }
 
-    // Compatibilidad con token enviado por GET
-    if (isset($_GET['token']) && !empty($_GET['token'])) {
-        return trim($_GET['token']);
-    }
-
-    // Compatibilidad con sesión PHP
-    if (
-        session_status() === PHP_SESSION_ACTIVE &&
-        isset($_SESSION['token'])
-    ) {
-        return $_SESSION['token'];
-    }
-
     return null;
 }
 
@@ -175,15 +162,6 @@ function obtenerUsuarioAutenticado($pdo)
 
     if ($token) {
         $idUsuario = decodificarToken($token);
-    }
-
-    // 2. Intentar desde sesión PHP tradicional
-    if (
-        !$idUsuario &&
-        session_status() === PHP_SESSION_ACTIVE &&
-        isset($_SESSION['id_usuario'])
-    ) {
-        $idUsuario = (int) $_SESSION['id_usuario'];
     }
 
     if (!$idUsuario) {
