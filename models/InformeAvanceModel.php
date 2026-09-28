@@ -10,12 +10,13 @@ class InformeAvanceModel {
     public function obtenerPorTutoria($id_tutoria) {
         $sql = "SELECT i.*,
                        t.id_materia,
-                       m.nombre_materia,
+                       COALESCE(m.nombre_materia, mg.nombre) AS nombre_materia,
                        CONCAT(u_est.nombre, ' ', u_est.apellido) AS nombre_estudiante,
                        CONCAT(u_tut.nombre, ' ', u_tut.apellido) AS nombre_tutor
                 FROM informes_avance i
                 INNER JOIN tutorias t ON i.id_tutoria = t.id_tutoria
-                INNER JOIN materias m ON t.id_materia = m.id_materia
+                LEFT JOIN materias m ON t.id_materia = m.id_materia
+                LEFT JOIN modalidades_graduacion mg ON t.id_modalidad = mg.id_modalidad
                 INNER JOIN estudiantes e ON t.id_estudiante = e.id_estudiante
                 INNER JOIN usuarios u_est ON e.id_usuario = u_est.id_usuario
                 INNER JOIN tutores tut ON t.id_tutor = tut.id_tutor

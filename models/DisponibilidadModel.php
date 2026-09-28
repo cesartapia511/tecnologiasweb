@@ -49,6 +49,19 @@ class DisponibilidadModel
         return $stmt->fetchAll();
     }
 
+    public function obtenerPorTutorYMateria($id_tutor, $id_materia)
+    {
+        $sql = "SELECT dia_semana, hora_inicio, hora_fin 
+                FROM solicitudes_materias 
+                WHERE id_tutor = :id_tutor 
+                  AND id_materia = :id_materia 
+                  AND estado = 'aprobada'
+                ORDER BY FIELD(dia_semana, 'Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'), hora_inicio ASC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id_tutor' => $id_tutor, ':id_materia' => $id_materia]);
+        return $stmt->fetchAll();
+    }
+
     public function obtenerPorId($id)
     {
         $stmt = $this->pdo->prepare(

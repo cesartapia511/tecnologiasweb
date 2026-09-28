@@ -19,7 +19,7 @@ class CartaDesignacionModel
                        u_tut.nombre AS tutor_nombre, u_tut.apellido AS tutor_apellido
                 FROM cartas_designacion c
                 INNER JOIN tutorias t ON c.id_tutoria = t.id_tutoria
-                INNER JOIN materias m ON t.id_materia = m.id_materia
+                LEFT JOIN materias m ON t.id_materia = m.id_materia
                 LEFT JOIN modalidades_graduacion mod_grad ON t.id_modalidad = mod_grad.id_modalidad
                 INNER JOIN estudiantes e ON c.id_estudiante = e.id_estudiante
                 INNER JOIN usuarios u_est ON e.id_usuario = u_est.id_usuario
@@ -62,7 +62,7 @@ class CartaDesignacionModel
                        u_tut.nombre AS tutor_nombre, u_tut.apellido AS tutor_apellido
                 FROM cartas_designacion c
                 INNER JOIN tutorias t ON c.id_tutoria = t.id_tutoria
-                INNER JOIN materias m ON t.id_materia = m.id_materia
+                LEFT JOIN materias m ON t.id_materia = m.id_materia
                 LEFT JOIN modalidades_graduacion mod_grad ON t.id_modalidad = mod_grad.id_modalidad
                 INNER JOIN estudiantes e ON c.id_estudiante = e.id_estudiante
                 INNER JOIN usuarios u_est ON e.id_usuario = u_est.id_usuario

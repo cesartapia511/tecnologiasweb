@@ -12,6 +12,8 @@ export const MisMateriasTutor = () => {
   const [solicitudes, setSolicitudes] = useState([]);
   const [todasMaterias, setTodasMaterias] = useState([]);
   const [selectedMateria, setSelectedMateria] = useState('');
+  const [selectedDia, setSelectedDia] = useState('');
+  const [selectedTurno, setSelectedTurno] = useState('');
   const [requesting, setRequesting] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -70,13 +72,18 @@ export const MisMateriasTutor = () => {
 
   const handleRequestMateria = async (e) => {
     e.preventDefault();
-    if (!selectedMateria) return;
+    if (!selectedMateria || !selectedDia || !selectedTurno) {
+      showError('Debe completar todos los campos');
+      return;
+    }
     
     setRequesting(true);
     try {
-      await solicitudesMateriasService.create(selectedMateria);
+      await solicitudesMateriasService.create(selectedMateria, selectedDia, selectedTurno);
       showSuccess('Solicitud enviada correctamente');
       setSelectedMateria('');
+      setSelectedDia('');
+      setSelectedTurno('');
       loadData(); // recargar
     } catch (err) {
       showError(err.response?.data?.mensaje || err.message);
@@ -200,7 +207,39 @@ export const MisMateriasTutor = () => {
                 ))}
               </select>
             </div>
-            <button type="submit" className="btn btn-primary" disabled={requesting || !selectedMateria}>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label className="form-label">Día</label>
+              <select 
+                className="form-control" 
+                value={selectedDia} 
+                onChange={(e) => setSelectedDia(e.target.value)}
+                required
+              >
+                <option value="">-- Día --</option>
+                <option value="Lunes">Lunes</option>
+                <option value="Martes">Martes</option>
+                <option value="Miercoles">Miércoles</option>
+                <option value="Jueves">Jueves</option>
+                <option value="Viernes">Viernes</option>
+                <option value="Sabado">Sábado</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label className="form-label">Turno</label>
+              <select 
+                className="form-control" 
+                value={selectedTurno} 
+                onChange={(e) => setSelectedTurno(e.target.value)}
+                required
+              >
+                <option value="">-- Turno --</option>
+                <option value="Mañana">Mañana (07:30 - 10:30)</option>
+                <option value="Mediodía">Mediodía (11:00 - 14:00)</option>
+                <option value="Tarde">Tarde (15:00 - 18:00)</option>
+                <option value="Noche">Noche (19:00 - 22:00)</option>
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={requesting || !selectedMateria || !selectedDia || !selectedTurno}>
               {requesting ? 'Enviando...' : 'Enviar Solicitud'}
             </button>
           </form>
@@ -212,6 +251,8 @@ export const MisMateriasTutor = () => {
               <thead>
                 <tr>
                   <th>Materia</th>
+                  <th>Día</th>
+                  <th>Horario</th>
                   <th>Fecha de Solicitud</th>
                   <th>Estado</th>
                   <th>Fecha de Resolución</th>
@@ -221,6 +262,8 @@ export const MisMateriasTutor = () => {
                 {solicitudes.map(sol => (
                   <tr key={sol.id_solicitud}>
                     <td style={{ fontWeight: 500 }}>{sol.nombre_materia}</td>
+                    <td>{sol.dia_semana}</td>
+                    <td>{sol.hora_inicio?.slice(0,5)} - {sol.hora_fin?.slice(0,5)}</td>
                     <td>{new Date(sol.fecha_solicitud).toLocaleDateString()}</td>
                     <td>
                       {sol.estado === 'pendiente' && <span style={{ color: 'var(--upds-gold)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={16}/> Pendiente</span>}

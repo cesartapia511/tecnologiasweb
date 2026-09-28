@@ -65,7 +65,13 @@ if ($method === 'GET') {
             );
         }
 
-        $list = $model->obtenerPorTutor($id_tutor);
+        $id_materia = isset($_GET['id_materia']) ? (int) $_GET['id_materia'] : null;
+
+        if ($id_materia !== null && $id_materia > 0) {
+            $list = $model->obtenerPorTutorYMateria($id_tutor, $id_materia);
+        } else {
+            $list = $model->obtenerPorTutor($id_tutor);
+        }
 
     } else {
 

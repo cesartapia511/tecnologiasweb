@@ -63,10 +63,6 @@ if ($method === 'GET') {
     try {
         $pdo->beginTransaction();
 
-        // Find a materia for the tutor
-        $stmtMateria = $pdo->prepare("SELECT id_materia FROM tutor_materia WHERE id_tutor = ? LIMIT 1");
-        $stmtMateria->execute([$id_tutor]);
-        $id_materia = $stmtMateria->fetchColumn() ?: 1;
 
         // Create tutoria
         $datosTutoria = [
@@ -83,10 +79,10 @@ if ($method === 'GET') {
         
         // We need to pass id_modalidad if supported, so let's just insert directly to handle id_modalidad
         $sqlTutoria = "INSERT INTO tutorias (id_estudiante, id_tutor, id_materia, id_modalidad, fecha, hora_inicio, hora_fin, modalidad, estado, observaciones) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?)";
         $stmtIns = $pdo->prepare($sqlTutoria);
         $stmtIns->execute([
-            $id_estudiante, $id_tutor, $id_materia, $id_modalidad, date('Y-m-d'), '00:00:00', '00:00:00', 'presencial', 'pendiente', 'Designación'
+            $id_estudiante, $id_tutor, $id_modalidad, date('Y-m-d'), '00:00:00', '00:00:00', 'presencial', 'pendiente', 'Designación'
         ]);
         $id_tutoria = $pdo->lastInsertId();
 

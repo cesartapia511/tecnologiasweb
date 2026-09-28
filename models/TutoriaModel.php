@@ -27,7 +27,7 @@ class TutoriaModel
                        ut.nombre AS tutor_nombre,
                        ut.apellido AS tutor_apellido,
 
-                       m.nombre_materia
+                       COALESCE(m.nombre_materia, mg.nombre) AS nombre_materia
 
                 FROM tutorias tu
 
@@ -43,8 +43,11 @@ class TutoriaModel
                 INNER JOIN usuarios ut
                     ON t.id_usuario = ut.id_usuario
 
-                INNER JOIN materias m
+                LEFT JOIN materias m
                     ON tu.id_materia = m.id_materia
+                    
+                LEFT JOIN modalidades_graduacion mg
+                    ON tu.id_modalidad = mg.id_modalidad
 
                 ORDER BY tu.fecha DESC, tu.hora_inicio DESC";
 
@@ -54,14 +57,15 @@ class TutoriaModel
     public function obtenerTodas($filtros = [])
     {
         $sql = "SELECT tu.*,
-                       m.nombre_materia,
+                       COALESCE(m.nombre_materia, mg.nombre) AS nombre_materia,
                        ue.nombre AS estudiante_nombre, ue.apellido AS estudiante_apellido, ue.correo AS estudiante_correo,
                        es.registro_universitario,
                        ut.nombre AS tutor_nombre, ut.apellido AS tutor_apellido, ut.correo AS tutor_correo,
                        t.especialidad AS tutor_especialidad,
                        ev.calificacion, ev.comentario AS evaluacion_comentario
                 FROM tutorias tu
-                INNER JOIN materias m ON tu.id_materia = m.id_materia
+                LEFT JOIN materias m ON tu.id_materia = m.id_materia
+                LEFT JOIN modalidades_graduacion mg ON tu.id_modalidad = mg.id_modalidad
                 INNER JOIN estudiantes es ON tu.id_estudiante = es.id_estudiante
                 INNER JOIN usuarios ue ON es.id_usuario = ue.id_usuario
                 INNER JOIN tutores t ON tu.id_tutor = t.id_tutor
@@ -94,14 +98,15 @@ class TutoriaModel
     {
         $stmt = $this->pdo->prepare(
             "SELECT tu.*,
-                    m.nombre_materia,
+                    COALESCE(m.nombre_materia, mg.nombre) AS nombre_materia,
                     ue.nombre AS estudiante_nombre, ue.apellido AS estudiante_apellido, ue.correo AS estudiante_correo,
                     es.registro_universitario,
                     ut.nombre AS tutor_nombre, ut.apellido AS tutor_apellido, ut.correo AS tutor_correo,
                     t.especialidad AS tutor_especialidad,
                     ev.calificacion, ev.comentario AS evaluacion_comentario
              FROM tutorias tu
-             INNER JOIN materias m ON tu.id_materia = m.id_materia
+             LEFT JOIN materias m ON tu.id_materia = m.id_materia
+             LEFT JOIN modalidades_graduacion mg ON tu.id_modalidad = mg.id_modalidad
              INNER JOIN estudiantes es ON tu.id_estudiante = es.id_estudiante
              INNER JOIN usuarios ue ON es.id_usuario = ue.id_usuario
              INNER JOIN tutores t ON tu.id_tutor = t.id_tutor

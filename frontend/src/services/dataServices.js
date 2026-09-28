@@ -61,7 +61,7 @@ export const tutoresService = {
 
 export const solicitudesMateriasService = {
   getAll: async () => (await api.get('/tutores/solicitudes.php')).data,
-  create: async (id_materia) => await api.post('/tutores/solicitudes.php', { id_materia }),
+  create: async (id_materia, dia_semana, turno) => await api.post('/tutores/solicitudes.php', { id_materia, dia_semana, turno }),
   resolve: async (id_solicitud, estado) => await api.put('/tutores/solicitudes.php', { id_solicitud, estado })
 };
 
@@ -74,10 +74,15 @@ export const estudiantesService = {
 };
 
 export const disponibilidadService = {
-  getAll: async (tutorId) =>
-    (await api.get(
-      `/disponibilidad/index.php${tutorId ? `?id_tutor=${tutorId}` : ''}`
-    )).data,
+  getAll: async (tutorId, materiaId) => {
+    let url = '/disponibilidad/index.php';
+    const params = new URLSearchParams();
+    if (tutorId) params.append('id_tutor', tutorId);
+    if (materiaId) params.append('id_materia', materiaId);
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+    return (await api.get(url)).data;
+  },
 
   create: async (data) =>
     await api.post('/disponibilidad/index.php', data),

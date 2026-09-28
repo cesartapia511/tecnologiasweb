@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS tutorias (
   id_tutoria INT AUTO_INCREMENT PRIMARY KEY,
   id_estudiante INT NOT NULL,
   id_tutor INT NOT NULL,
-  id_materia INT NOT NULL,
+  id_materia INT NULL,
   fecha DATE NOT NULL,
   hora_inicio TIME NOT NULL,
   hora_fin TIME NOT NULL,
@@ -254,10 +254,13 @@ CREATE TABLE IF NOT EXISTS solicitudes_materias (
     id_solicitud INT AUTO_INCREMENT PRIMARY KEY,
     id_tutor INT NOT NULL,
     id_materia INT NOT NULL,
+    dia_semana ENUM('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado') NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
     estado ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
     fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
     fecha_resolucion DATETIME NULL,
     FOREIGN KEY (id_tutor) REFERENCES tutores(id_tutor) ON DELETE CASCADE,
     FOREIGN KEY (id_materia) REFERENCES materias(id_materia) ON DELETE CASCADE,
-    UNIQUE KEY unique_solicitud (id_tutor, id_materia, estado)
+    INDEX idx_solicitud (id_tutor, dia_semana, hora_inicio, estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

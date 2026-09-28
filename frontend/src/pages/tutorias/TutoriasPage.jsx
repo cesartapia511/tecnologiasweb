@@ -7,7 +7,8 @@ import {
   cartasService,
   estudiantesService,
   reunionesService,
-  informesService
+  informesService,
+  disponibilidadService
 } from '../../services/dataServices';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -39,6 +40,9 @@ export const TutoriasPage = () => {
   const [tutores, setTutores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('todas');
+  
+  const [disponibilidadTutor, setDisponibilidadTutor] = useState([]);
+  const [dispLoading, setDispLoading] = useState(false);
   
   // Cartas y Estudiantes para Designación
   const [cartas, setCartas] = useState([]);
@@ -183,6 +187,41 @@ export const TutoriasPage = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (solicitudData.id_tutor && solicitudData.id_materia && isSolicitudOpen) {
+      setDispLoading(true);
+      disponibilidadService.getAll(solicitudData.id_tutor, solicitudData.id_materia)
+        .then(data => {
+          setDisponibilidadTutor(data || []);
+          if (data && data.length > 0) {
+            // Auto select the first availability
+            const firstDisp = data[0];
+            // Find the next date that matches dia_semana
+            const date = new Date();
+            const days = { 'Domingo': 0, 'Lunes': 1, 'Martes': 2, 'Miercoles': 3, 'Jueves': 4, 'Viernes': 5, 'Sabado': 6 };
+            const targetDay = days[firstDisp.dia_semana];
+            let offset = targetDay - date.getDay();
+            if (offset < 0) offset += 7;
+            date.setDate(date.getDate() + offset);
+            
+            setSolicitudData(prev => ({
+              ...prev,
+              fecha: date.toISOString().split('T')[0],
+              hora_inicio: firstDisp.hora_inicio.slice(0, 5),
+              hora_fin: firstDisp.hora_fin.slice(0, 5)
+            }));
+          }
+        })
+        .catch(err => {
+          showError('Error al cargar disponibilidad del tutor');
+          setDisponibilidadTutor([]);
+        })
+        .finally(() => setDispLoading(false));
+    } else {
+      setDisponibilidadTutor([]);
+    }
+  }, [solicitudData.id_tutor, solicitudData.id_materia, isSolicitudOpen]);
 
   // Crear Solicitud
   const handleSolicitar = async (e) => {
@@ -1234,29 +1273,41 @@ export const TutoriasPage = () => {
                 required
                 value={solicitudData.fecha}
                 onChange={(e) => setSolicitudData({ ...solicitudData, fecha: e.target.value })}
+                disabled={dispLoading || disponibilidadTutor.length === 0}
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Turno Académico (UPDS)</label>
+              <label className="form-label">Horario Disponible (Tutor)</label>
               <select
                 className="form-control"
                 required
-                value={solicitudData.hora_inicio}
+                value={`${solicitudData.hora_inicio}-${solicitudData.hora_fin}`}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '07:30') setSolicitudData({ ...solicitudData, hora_inicio: '07:30', hora_fin: '10:30' });
-                  if (val === '11:00') setSolicitudData({ ...solicitudData, hora_inicio: '11:00', hora_fin: '14:00' });
-                  if (val === '15:00') setSolicitudData({ ...solicitudData, hora_inicio: '15:00', hora_fin: '18:00' });
-                  if (val === '19:00') setSolicitudData({ ...solicitudData, hora_inicio: '19:00', hora_fin: '22:00' });
+                  const [inicio, fin] = e.target.value.split('-');
+                  setSolicitudData({ ...solicitudData, hora_inicio: inicio, hora_fin: fin });
                 }}
+                disabled={dispLoading || disponibilidadTutor.length === 0}
               >
-                <option value="07:30">Turno Mañana (07:30 a 10:30)</option>
-                <option value="11:00">Turno Mediodía (11:00 a 14:00)</option>
-                <option value="15:00">Turno Tarde (15:00 a 18:00)</option>
-                <option value="19:00">Turno Noche (19:00 a 22:00)</option>
+                {dispLoading ? (
+                  <option value="">Cargando horarios...</option>
+                ) : disponibilidadTutor.length === 0 ? (
+                  <option value="">Sin horarios configurados</option>
+                ) : (
+                  disponibilidadTutor.map((disp, idx) => (
+                    <option key={idx} value={`${disp.hora_inicio.slice(0,5)}-${disp.hora_fin.slice(0,5)}`}>
+                      {disp.dia_semana}: {disp.hora_inicio.slice(0, 5)} a {disp.hora_fin.slice(0, 5)}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
+          
+          {!dispLoading && disponibilidadTutor.length === 0 && solicitudData.id_tutor && (
+            <div style={{ color: 'var(--upds-red)', marginTop: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+              Este tutor no tiene horarios de atención disponibles configurados.
+            </div>
+          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
@@ -1302,7 +1353,7 @@ export const TutoriasPage = () => {
             >
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary" disabled={formLoading}>
+            <button type="submit" className="btn btn-primary" disabled={formLoading || disponibilidadTutor.length === 0}>
               {formLoading ? 'Registrando...' : 'Registrar Solicitud'}
             </button>
           </div>

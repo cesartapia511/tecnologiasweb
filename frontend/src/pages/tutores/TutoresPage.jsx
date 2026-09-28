@@ -629,7 +629,8 @@ export const TutoresPage = () => {
               <tr>
                 <th>Tutor</th>
                 <th>Materia</th>
-                <th>Fecha Solicitud</th>
+                <th>Día</th>
+                <th>Turno/Horario</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -637,7 +638,7 @@ export const TutoresPage = () => {
             <tbody>
               {todasSolicitudes.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                     No hay solicitudes registradas
                   </td>
                 </tr>
@@ -646,7 +647,8 @@ export const TutoresPage = () => {
                   <tr key={sol.id_solicitud}>
                     <td>Lic. {sol.tutor_nombres} {sol.tutor_apellidos}</td>
                     <td>{sol.nombre_materia} ({sol.nombre_carrera || 'General'})</td>
-                    <td>{new Date(sol.fecha_solicitud).toLocaleDateString()}</td>
+                    <td>{sol.dia_semana}</td>
+                    <td>{sol.hora_inicio?.slice(0,5)} - {sol.hora_fin?.slice(0,5)}</td>
                     <td>
                       <StatusBadge status={sol.estado === 'aprobada' ? 'realizada' : (sol.estado === 'rechazada' ? 'cancelada' : 'pendiente')} />
                     </td>

@@ -446,33 +446,37 @@ elseif ($method === 'POST') {
 
     $totalDispTutor = (int) $stmtTieneDisp->fetchColumn();
 
-    if ($totalDispTutor > 0) {
+    if ($totalDispTutor === 0) {
+        jsonError(
+            'Tutor no disponible',
+            409,
+            'El tutor no tiene horarios de atención disponibles configurados.'
+        );
+    }
 
-        $stmtDisp = $pdo->prepare("
-            SELECT id_disponibilidad
-            FROM disponibilidad_tutor
-            WHERE id_tutor = ?
-              AND dia_semana = ?
-              AND hora_inicio <= ?
-              AND hora_fin >= ?
-            LIMIT 1
-        ");
+    $stmtDisp = $pdo->prepare("
+        SELECT id_disponibilidad
+        FROM disponibilidad_tutor
+        WHERE id_tutor = ?
+          AND dia_semana = ?
+          AND hora_inicio <= ?
+          AND hora_fin >= ?
+        LIMIT 1
+    ");
 
-        $stmtDisp->execute([
-            $id_tutor,
-            $diaSemana,
-            $hora_inicio,
-            $hora_fin
-        ]);
+    $stmtDisp->execute([
+        $id_tutor,
+        $diaSemana,
+        $hora_inicio,
+        $hora_fin
+    ]);
 
-        if (!$stmtDisp->fetch()) {
-
-            jsonError(
-                'Tutor no disponible',
-                409,
-                "El tutor no tiene disponibilidad registrada el día $diaSemana para el horario solicitado."
-            );
-        }
+    if (!$stmtDisp->fetch()) {
+        jsonError(
+            'Tutor no disponible',
+            409,
+            "El tutor no tiene disponibilidad registrada el día $diaSemana para el horario solicitado."
+        );
     }
 
     /*

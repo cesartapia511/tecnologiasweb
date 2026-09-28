@@ -1,0 +1,2 @@
+INSERT INTO tutorias (id_estudiante, id_tutor, id_materia, id_modalidad, fecha, hora_inicio, hora_fin, modalidad, estado, observaciones) VALUES (2, 1, NULL, 1, CURDATE(), '00:00:00', '00:00:00', 'presencial', 'pendiente', 'Designación');
+INSERT INTO cartas_designacion (id_tutoria, id_tutor, id_estudiante, creado_por, tipo_firma, fecha_generacion) VALUES (LAST_INSERT_ID(), 1, 2, 1, 'pendiente', CURRENT_TIMESTAMP);
