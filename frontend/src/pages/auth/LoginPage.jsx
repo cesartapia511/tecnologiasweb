@@ -144,12 +144,7 @@ export const LoginPage = () => {
     setLoading(true);
 
     let submitData = { ...regData };
-    if (submitData.id_rol === 2) {
-      const selectedCarrera = carreras.find(c => c.id_carrera === submitData.id_carrera);
-      if (selectedCarrera) {
-        submitData.especialidad = selectedCarrera.nombre_carrera;
-      }
-    }
+
 
     const res = await register(submitData);
 
@@ -611,18 +606,8 @@ export const LoginPage = () => {
                 </button>
                 <h3 style={{ marginBottom: '15px', fontSize: '1.3rem', textAlign: 'center' }}>Registro de Nuevo Usuario</h3>
                 
-                <div className="glass-input-group">
-                  <label>Tipo de Usuario:</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <label style={{ flex: 1, padding: '10px', background: regData.id_rol === 3 ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)', color: regData.id_rol === 3 ? '#19335A' : 'white', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', fontWeight: 'bold' }}>
-                      <input type="radio" name="rol" value="3" checked={regData.id_rol === 3} onChange={() => setRegData({...regData, id_rol: 3})} style={{display:'none'}} />
-                      🎓 Estudiante
-                    </label>
-                    <label style={{ flex: 1, padding: '10px', background: regData.id_rol === 2 ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)', color: regData.id_rol === 2 ? '#19335A' : 'white', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', fontWeight: 'bold' }}>
-                      <input type="radio" name="rol" value="2" checked={regData.id_rol === 2} onChange={() => setRegData({...regData, id_rol: 2})} style={{display:'none'}} />
-                      👨‍🏫 Tutor
-                    </label>
-                  </div>
+                <div style={{ display: 'none' }}>
+                  <input type="hidden" name="rol" value="3" />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -667,16 +652,14 @@ export const LoginPage = () => {
                   </select>
                 </div>
 
-                {regData.id_rol === 3 && (
-                  <div className="glass-input-group">
-                    <label>Semestre</label>
-                    <select className="glass-input-control" value={regData.semestre} onChange={(e) => setRegData({...regData, semestre: Number(e.target.value)})}>
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((s) => (
-                        <option key={s} value={s}>{s}° Semestre</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                <div className="glass-input-group">
+                  <label>Semestre</label>
+                  <select className="glass-input-control" value={regData.semestre} onChange={(e) => setRegData({...regData, semestre: Number(e.target.value)})}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((s) => (
+                      <option key={s} value={s}>{s}° Semestre</option>
+                    ))}
+                  </select>
+                </div>
 
                 <button type="submit" className="btn-glass-primary" style={{marginTop: '10px'}} disabled={loading}>
                   {loading ? 'Registrando...' : 'Crear Mi Cuenta'}

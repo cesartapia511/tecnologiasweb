@@ -25,15 +25,14 @@ $errores = [];
 
 /*
  * SEGURIDAD:
- * El registro público solamente permite crear:
- * 2 = tutor
+ * El registro público solamente permite crear cuentas de:
  * 3 = estudiante
  *
- * El rol 1 (administrador) solamente puede ser asignado
+ * Los roles 1 (administrador) y 2 (tutor) solamente pueden ser asignados
  * desde el sistema administrativo.
  */
-if (!in_array($id_rol, [2, 3], true)) {
-    $errores['id_rol'] = 'El rol seleccionado no está permitido para el registro público.';
+if ($id_rol !== 3) {
+    $errores['id_rol'] = 'El registro público está habilitado exclusivamente para estudiantes.';
 }
 
 if ($nombre === '' || mb_strlen($nombre) < 2 || mb_strlen($nombre) > 100) {
@@ -90,17 +89,6 @@ if ($id_rol === 3) {
     }
 }
 
-/*
- * Validaciones específicas para tutores
- */
-if ($id_rol === 2) {
-    $especialidad = trim($input['especialidad'] ?? '');
-
-    if ($especialidad === '' || mb_strlen($especialidad) < 3 || mb_strlen($especialidad) > 150) {
-        $errores['especialidad'] =
-            'La especialidad del tutor debe tener entre 3 y 150 caracteres.';
-    }
-}
 
 if (!empty($errores)) {
     jsonError(
