@@ -1,14 +1,15 @@
 <?php
 
+require_once __DIR__ . '/../cors.php';
+require_once __DIR__ . '/../../config/conexion.php';
 require_once __DIR__ . '/../../models/PeriodoInscripcion.php';
-
-header("Content-Type: application/json; charset=UTF-8");
 
 try {
     $periodo = new PeriodoInscripcion();
     $metodo = $_SERVER['REQUEST_METHOD'];
 
     if ($metodo === 'GET') {
+        requerirAutenticacion($pdo);
 
         $periodos = $periodo->obtenerTodos();
 
@@ -27,6 +28,11 @@ try {
     }
 
     if ($metodo === 'POST') {
+        $usuario = requerirAutenticacion($pdo);
+        $rol = strtolower($usuario['rol'] ?? $usuario['nombre_rol'] ?? '');
+        if ($rol !== 'administrador') {
+            jsonError('No tiene permisos para realizar esta acción', 403, 'Solo el administrador puede crear períodos de inscripción.');
+        }
 
         $nombre = trim($input['nombre'] ?? '');
         $fechaInicio = $input['fecha_inicio'] ?? '';
@@ -84,6 +90,11 @@ try {
     }
 
     if ($metodo === 'PUT') {
+        $usuario = requerirAutenticacion($pdo);
+        $rol = strtolower($usuario['rol'] ?? $usuario['nombre_rol'] ?? '');
+        if ($rol !== 'administrador') {
+            jsonError('No tiene permisos para realizar esta acción', 403, 'Solo el administrador puede modificar períodos de inscripción.');
+        }
 
         $idPeriodo = (int)($input['id_periodo'] ?? 0);
         $accion = $input['accion'] ?? '';
@@ -141,12 +152,11 @@ try {
     ]);
 
 } catch (Throwable $e) {
-
+    error_log($e->getMessage());
     http_response_code(500);
 
     echo json_encode([
         'success' => false,
-        'message' => 'Error interno del servidor',
-        'error' => $e->getMessage()
+        'message' => 'Error interno del servidor'
     ]);
 }
