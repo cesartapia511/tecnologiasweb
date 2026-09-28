@@ -93,10 +93,6 @@ export const LoginPage = () => {
     };
   }, []);
 
-  const setTestCredentials = (user, pass) => {
-    setUsuario(user);
-    setContrasena(pass);
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -574,14 +570,6 @@ export const LoginPage = () => {
                   />
                 </div>
 
-                <div style={{ marginBottom: '20px', textAlign: 'left', fontSize: '0.8rem', background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '8px' }}>
-                  <div style={{ marginBottom: '5px', fontWeight: 'bold' }}>Usuarios de prueba:</div>
-                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                    <button type="button" style={{padding:'4px 8px', borderRadius:'4px', border:'none', cursor:'pointer', background:'white', color:'#333'}} onClick={() => { setUsuario('admin'); setContrasena('password'); }}>Admin</button>
-                    <button type="button" style={{padding:'4px 8px', borderRadius:'4px', border:'none', cursor:'pointer', background:'white', color:'#333'}} onClick={() => { setUsuario('tutor1'); setContrasena('password'); }}>Tutor</button>
-                    <button type="button" style={{padding:'4px 8px', borderRadius:'4px', border:'none', cursor:'pointer', background:'white', color:'#333'}} onClick={() => { setUsuario('estudiante1'); setContrasena('password'); }}>Alumno</button>
-                  </div>
-                </div>
 
                 <button type="submit" className="btn-glass-primary" disabled={loading}>
                   {loading ? 'Ingresando...' : 'Ingresar'}
