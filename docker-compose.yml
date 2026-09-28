@@ -28,7 +28,11 @@ services:
       MYSQL_PASSWORD: 12345
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./database/migration_permisos.sql:/docker-entrypoint-initdb.d/02_migration_permisos.sql
+      - ./database/seed_carreras_materias_horarios.sql:/docker-entrypoint-initdb.d/03_seed_carreras_materias_horarios.sql
+      - ./database/migrations/gestion_cupos_periodos.sql:/docker-entrypoint-initdb.d/04_gestion_cupos_periodos.sql
+      - ./database/migrations/05_notificaciones.sql:/docker-entrypoint-initdb.d/05_notificaciones.sql
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
