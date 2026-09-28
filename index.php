@@ -1,4 +1,4 @@
 <?php
-// Redirección inicial al login del sistema
-header('Location: views/login/login.php');
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(["service" => "UPDS Tutorias API", "status" => "online"]);
 exit;
