@@ -8,7 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 
 export const Header = ({ onToggleSidebar }) => {
-  const { user, role, logout, login } = useAuth();
+  const { user, role, logout, login, updateUser } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -129,7 +129,9 @@ export const Header = ({ onToggleSidebar }) => {
         contrasena_actual: claveActual || undefined
       });
       
-      showSuccess('Perfil actualizado correctamente. Los cambios en la foto pueden requerir reiniciar sesión para reflejarse globalmente.');
+      updateUser({ foto_perfil: fotoUrl, telefono: telefono });
+      
+      showSuccess('Perfil actualizado correctamente.');
       setProfileModalOpen(false);
       setClaveActual('');
       setClaveNueva('');

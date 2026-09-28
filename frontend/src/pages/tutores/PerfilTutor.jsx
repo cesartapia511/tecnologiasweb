@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const PerfilTutor = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { showSuccess, showError } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -130,12 +130,14 @@ export const PerfilTutor = () => {
       if (fotoFile) {
         const uploadRes = await usuariosService.uploadFoto(fotoFile);
 
-        fotoUrl = uploadRes.data.data.foto_perfil;
+        fotoUrl = uploadRes.data.foto_perfil;
 
         setPerfil(prev => ({
           ...prev,
           foto_perfil: fotoUrl
         }));
+        
+        updateUser({ foto_perfil: fotoUrl });
       }
 
       await tutoresService.update({

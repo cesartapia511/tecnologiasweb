@@ -36,10 +36,10 @@ export const ReportesPage = () => {
   const loadFilterOptions = async () => {
     try {
       const resCarreras = await carrerasService.getAll();
-      if (resCarreras?.data) setCarreras(resCarreras.data);
+      if (resCarreras) setCarreras(resCarreras);
       
       const resMaterias = await materiasService.getAll();
-      if (resMaterias?.data) setMaterias(resMaterias.data);
+      if (resMaterias) setMaterias(resMaterias);
     } catch (error) {
       showError('Error al cargar opciones de filtros');
     }

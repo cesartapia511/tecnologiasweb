@@ -24,7 +24,7 @@ export const PeriodosInscripcionPage = () => {
     try {
       const data = await periodosInscripcionService.obtenerTodos();
       // data might be array or object, assuming it's { success: true, data: [...] } or just array based on typical structure.
-      setPeriodos(data.data || data || []);
+      setPeriodos(data || []);
     } catch (err) {
       showError(err.message || 'Error al cargar periodos');
     } finally {

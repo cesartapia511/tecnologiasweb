@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { PerfilTutor } from '../tutores/PerfilTutor';
 
 const PerfilEstudiante = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { showSuccess, showError } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -108,12 +108,14 @@ const PerfilEstudiante = () => {
       if (fotoFile) {
         const uploadRes = await usuariosService.uploadFoto(fotoFile);
 
-        fotoUrl = uploadRes.data.data.foto_perfil;
+        fotoUrl = uploadRes.data.foto_perfil;
 
         setPerfil(prev => ({
           ...prev,
           foto_perfil: fotoUrl
         }));
+        
+        updateUser({ foto_perfil: fotoUrl });
       }
 
       // Actualizar información del usuario

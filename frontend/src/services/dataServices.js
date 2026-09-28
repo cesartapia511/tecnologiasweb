@@ -86,7 +86,7 @@ export const tutoriasService = {
   },
 
   disponibles: async () =>
-    (await api.get('/tutorias/disponibles.php')).data.data,
+    (await api.get('/tutorias/disponibles.php')).data,
 
   create: async (data) =>
     await api.post('/tutorias/index.php', data),
