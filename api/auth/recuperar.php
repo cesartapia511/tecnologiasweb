@@ -17,26 +17,51 @@ if ($method === 'POST') {
     $usuario = $stmt->fetch();
 
     $recovery_url = null;
+    $mail_mode = getenv('MAIL_MODE') ?: 'sandbox';
+
+    if ($mail_mode === 'smtp') {
+        // En entorno SMTP no conectamos a servidor, pero evitamos distinguir cuentas devolviendo success falso internamente o mostrando error sin conexión.
+        jsonError('Servicio no disponible', 500, 'El canal SMTP no está configurado en este entorno.');
+    }
 
     if ($usuario) {
         $token = bin2hex(random_bytes(32));
         $hash = hash('sha256', $token);
-        $expira = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $expira = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-        $stmtToken = $pdo->prepare("INSERT INTO password_reset_tokens (id_usuario, token_hash, expira_en) VALUES (?, ?, ?)");
-        $stmtToken->execute([$usuario['id_usuario'], $hash, $expira]);
+        try {
+            $pdo->beginTransaction();
 
-        // NOTA: Como no hay servidor SMTP configurado, no enviamos correo. 
-        // En entorno de desarrollo local, generamos la URL para poder probar.
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-        $host = "localhost:5173"; // Por defecto Vite usa el puerto 5173
-        
-        $recovery_url = $protocol . $host . "/restablecer-contrasena?token=" . $token;
+            // Eliminar tokens anteriores para cumplir el requerimiento
+            $stmtDelete = $pdo->prepare("DELETE FROM password_reset_tokens WHERE id_usuario = ?");
+            $stmtDelete->execute([$usuario['id_usuario']]);
+
+            $stmtToken = $pdo->prepare("INSERT INTO password_reset_tokens (id_usuario, token_hash, expira_en) VALUES (?, ?, ?)");
+            $stmtToken->execute([$usuario['id_usuario'], $hash, $expira]);
+
+            $pdo->commit();
+
+            if ($mail_mode === 'sandbox') {
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                $host = "localhost:5174";
+                $recovery_url = $protocol . $host . "/restablecer-contrasena?token=" . $token;
+            }
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log('Error al generar token de recuperación: ' . $e->getMessage());
+            jsonError('Error interno del servidor', 500, 'No se pudo procesar la solicitud.');
+        }
     }
 
-    // Por seguridad, siempre mostramos el mismo mensaje exista o no el correo
-    // Incluimos recovery_url en desarrollo para permitir el flujo sin SMTP
-    jsonSuccess(['recovery_url' => $recovery_url], 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.');
+    $response_data = [];
+    if ($recovery_url) {
+        $response_data['recovery_url'] = $recovery_url;
+    }
+
+    // Respuesta general de seguridad (idéntica para éxito y usuario no existente)
+    jsonSuccess($response_data, 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.');
 } else {
     jsonError('Método no permitido', 405);
 }

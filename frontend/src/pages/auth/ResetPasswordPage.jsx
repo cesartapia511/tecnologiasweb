@@ -27,13 +27,13 @@ export const ResetPasswordPage = () => {
     const verificarToken = async () => {
       try {
         const response = await api.get(`/auth/verificar-token.php?token=${token}`);
-        if (response.data && response.data.data && response.data.data.valido) {
+        if (response?.data?.valido) {
           setTokenValid(true);
         } else {
-          showError(response.data?.message || 'Token inválido.');
+          showError(response?.message || 'Token inválido.');
         }
       } catch (error) {
-        showError(error.response?.data?.message || 'El enlace es inválido o ha expirado.');
+        showError(error?.message || 'El enlace es inválido o ha expirado.');
       } finally {
         setValidating(false);
         setLoading(false);
@@ -62,10 +62,10 @@ export const ResetPasswordPage = () => {
         token,
         nueva_contrasena: nuevaContrasena
       });
-      showSuccess(response.data?.message || 'Contraseña restablecida exitosamente.');
+      showSuccess(response?.message || 'Contraseña restablecida exitosamente.');
       navigate('/login');
     } catch (error) {
-      showError(error.response?.data?.message || 'Error al restablecer la contraseña.');
+      showError(error?.message || 'Error al restablecer la contraseña.');
       setLoading(false);
     }
   };

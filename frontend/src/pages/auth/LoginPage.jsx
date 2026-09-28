@@ -683,8 +683,11 @@ export const LoginPage = () => {
                 </button>
 
                 {recoveryUrl && (
-                  <div style={{ marginTop: '15px', padding: '10px', background: 'rgba(14, 165, 233, 0.2)', border: '1px solid #0ea5e9', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '5px' }}>[ENTORNO DE DESARROLLO]</div>
+                  <div style={{ marginTop: '15px', padding: '15px', background: 'rgba(14, 165, 233, 0.15)', border: '1px solid #0ea5e9', borderRadius: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: '#38bdf8' }}>[Modo sandbox/desarrollo]</div>
+                    <p style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0', lineHeight: '1.4' }}>
+                      Para el entorno académico actual, el enlace de recuperación se proporciona directamente a continuación:
+                    </p>
                     <a href={recoveryUrl} onClick={(e) => {
                       e.preventDefault();
                       try {
@@ -693,8 +696,8 @@ export const LoginPage = () => {
                       } catch (error) {
                         console.error('URL inválida');
                       }
-                    }} style={{ color: 'white', fontSize: '0.85rem' }}>
-                      Abrir enlace de recuperación
+                    }} className="btn-glass-primary" style={{ display: 'inline-block', width: 'auto', padding: '10px 20px', margin: '0', textDecoration: 'none', fontSize: '0.95rem' }}>
+                      Restablecer contraseña
                     </a>
                   </div>
                 )}
