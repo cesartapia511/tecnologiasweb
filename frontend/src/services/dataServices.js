@@ -18,6 +18,7 @@ export const usuariosService = {
 
 export const carrerasService = {
   getAll: async () => (await api.get('/carreras/index.php')).data,
+  getPublicas: async () => (await api.get('/carreras/publicas.php')).data,
   getById: async (id) => (await api.get(`/carreras/detalle.php?id=${id}`)).data,
   create: async (nombre) =>
     await api.post('/carreras/index.php', {

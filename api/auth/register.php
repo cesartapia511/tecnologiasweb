@@ -18,6 +18,7 @@ $nombre = trim($input['nombre'] ?? '');
 $apellido = trim($input['apellido'] ?? '');
 $correo = trim($input['correo'] ?? '');
 $usuario = trim($input['usuario'] ?? '');
+$telefono = trim($input['telefono'] ?? '');
 $clave = $input['clave'] ?? '';
 $id_rol = isset($input['id_rol']) ? (int)$input['id_rol'] : 3;
 
@@ -64,6 +65,10 @@ if (
 if ($clave === '' || mb_strlen($clave) < 6) {
     $errores['clave'] =
         'La contraseña debe tener al menos 6 caracteres.';
+}
+
+if ($telefono !== '' && !preg_match('/^[0-9+\s-]{7,20}$/', $telefono)) {
+    $errores['telefono'] = 'El teléfono solo debe contener números y tener entre 7 y 20 dígitos.';
 }
 
 /*
@@ -161,6 +166,7 @@ try {
         'apellido' => $apellido,
         'correo' => $correo,
         'usuario' => $usuario,
+        'telefono' => $telefono,
         'clave' => $clave,
         'id_carrera' => $input['id_carrera'] ?? 1,
         'semestre' => $input['semestre'] ?? 1,

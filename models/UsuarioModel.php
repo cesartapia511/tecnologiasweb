@@ -89,8 +89,8 @@ class UsuarioModel
             $hash = password_hash($datos['clave'], PASSWORD_DEFAULT);
             $id_rol = !empty($datos['id_rol']) ? intval($datos['id_rol']) : 3; // 3 = estudiante
 
-            $sql = "INSERT INTO usuarios (id_rol, nombre, apellido, correo, usuario, contrasena_hash, estado)
-                    VALUES (:id_rol, :nombre, :apellido, :correo, :usuario, :hash, 'activo')";
+            $sql = "INSERT INTO usuarios (id_rol, nombre, apellido, correo, usuario, telefono, contrasena_hash, estado)
+                    VALUES (:id_rol, :nombre, :apellido, :correo, :usuario, :telefono, :hash, 'activo')";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 ':id_rol'   => $id_rol,
@@ -98,6 +98,7 @@ class UsuarioModel
                 ':apellido' => trim($datos['apellido']),
                 ':correo'   => trim($datos['correo']),
                 ':usuario'  => trim($datos['usuario']),
+                ':telefono' => isset($datos['telefono']) && trim($datos['telefono']) !== '' ? trim($datos['telefono']) : null,
                 ':hash'     => $hash,
             ]);
 

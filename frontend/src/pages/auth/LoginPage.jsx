@@ -34,22 +34,12 @@ const YoutubeIcon = ({ size = 20 }) => (
   </svg>
 );
 
-const UPDS_CARRERAS_DEFAULT = [
-  { id_carrera: 1, nombre_carrera: 'Ingeniería de Sistemas' },
-  { id_carrera: 2, nombre_carrera: 'Ingeniería Comercial' },
-  { id_carrera: 3, nombre_carrera: 'Ingeniería Industrial' },
-  { id_carrera: 4, nombre_carrera: 'Administración de Empresas' },
-  { id_carrera: 5, nombre_carrera: 'Contaduría Pública' },
-  { id_carrera: 6, nombre_carrera: 'Derecho' },
-  { id_carrera: 7, nombre_carrera: 'Psicología' },
-  { id_carrera: 8, nombre_carrera: 'Comunicación Social' },
-  { id_carrera: 9, nombre_carrera: 'Arquitectura' },
-  { id_carrera: 10, nombre_carrera: 'Ingeniería Financiera' },
-];
+
 
 export const LoginPage = () => {
   const [activeTab, setActiveTab] = useState('menu');
-  const [carreras, setCarreras] = useState(UPDS_CARRERAS_DEFAULT);
+  const [carreras, setCarreras] = useState([]);
+  const [loadingCarreras, setLoadingCarreras] = useState(true);
 
   // Login
   const [usuario, setUsuario] = useState('');
@@ -67,7 +57,7 @@ export const LoginPage = () => {
     usuario: '',
     clave: '',
     telefono: '',
-    id_carrera: 1,
+    id_carrera: '',
     semestre: 1,
     especialidad: '',
   });
@@ -80,13 +70,19 @@ export const LoginPage = () => {
     let isMounted = true;
 
     carrerasService
-      .getAll()
+      .getPublicas()
       .then((data) => {
-        if (isMounted && data && Array.isArray(data) && data.length > 0) {
+        if (isMounted && data && Array.isArray(data)) {
           setCarreras(data);
+          if (data.length > 0) {
+            setRegData(prev => ({ ...prev, id_carrera: data[0].id_carrera }));
+          }
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setLoadingCarreras(false);
+      });
 
     return () => {
       isMounted = false;
@@ -132,8 +128,18 @@ export const LoginPage = () => {
       return;
     }
 
+    if (!regData.id_carrera) {
+      showError('Por favor selecciona una carrera válida');
+      return;
+    }
+
     if (regData.clave.length < 6) {
       showError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (regData.telefono && !/^[0-9+\s-]{7,20}$/.test(regData.telefono)) {
+      showError('El teléfono solo debe contener números y tener entre 7 y 20 dígitos');
       return;
     }
 
@@ -627,17 +633,23 @@ export const LoginPage = () => {
                   </div>
                   <div className="glass-input-group">
                     <label>Teléfono</label>
-                    <input type="text" className="glass-input-control" value={regData.telefono} onChange={(e) => setRegData({...regData, telefono: e.target.value})} />
+                    <input type="tel" className="glass-input-control" value={regData.telefono} onChange={(e) => setRegData({...regData, telefono: e.target.value})} />
                   </div>
                 </div>
 
                 <div className="glass-input-group">
                   <label>Carrera *</label>
-                  <select className="glass-input-control" value={regData.id_carrera} onChange={(e) => setRegData({...regData, id_carrera: Number(e.target.value)})}>
-                    {carreras.map((c) => (
-                      <option key={c.id_carrera} value={c.id_carrera}>{c.nombre_carrera}</option>
-                    ))}
-                  </select>
+                  {carreras.length > 0 ? (
+                    <select className="glass-input-control" value={regData.id_carrera} onChange={(e) => setRegData({...regData, id_carrera: Number(e.target.value)})}>
+                      {carreras.map((c) => (
+                        <option key={c.id_carrera} value={c.id_carrera}>{c.nombre_carrera}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '8px', color: '#fca5a5', fontSize: '0.85rem' }}>
+                      {loadingCarreras ? 'Cargando carreras...' : 'No se pudo cargar el catálogo de carreras. Inténtalo más tarde.'}
+                    </div>
+                  )}
                 </div>
 
                 <div className="glass-input-group">

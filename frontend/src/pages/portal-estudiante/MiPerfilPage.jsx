@@ -99,6 +99,11 @@ const PerfilEstudiante = () => {
       return;
     }
 
+    if (perfil.telefono && !/^[0-9+\s-]{7,20}$/.test(perfil.telefono)) {
+      showError('El teléfono solo debe contener números y tener entre 7 y 20 dígitos');
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -445,7 +450,7 @@ const PerfilEstudiante = () => {
                 />
 
                 <input
-                  type="text"
+                  type="tel"
                   name="telefono"
                   className="form-control"
                   style={{ paddingLeft: '35px' }}

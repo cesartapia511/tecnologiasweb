@@ -115,6 +115,11 @@ export const PerfilTutor = () => {
       return;
     }
 
+    if (perfil.telefono && !/^[0-9+\s-]{7,20}$/.test(perfil.telefono)) {
+      showError('El teléfono solo debe contener números y tener entre 7 y 20 dígitos');
+      return;
+    }
+
     if (!claveActual) {
       showError(
         'Debes ingresar tu contraseña actual para confirmar los cambios'
@@ -470,7 +475,7 @@ export const PerfilTutor = () => {
                 />
 
                 <input
-                  type="text"
+                  type="tel"
                   name="telefono"
                   className="form-control"
                   style={{ paddingLeft: '35px' }}
